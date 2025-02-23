@@ -22,7 +22,7 @@ from ..constants import (
 
 from ..tools import (
     add_spliceai_eval_columns,
-    add_cadd_eval_column,
+    cadd_pipeline,
     main_revel_pipeline,
 )
 
@@ -92,10 +92,14 @@ def get_workspace_apply_spliceai(relative_path):
                 existing_data = pd.read_csv(destination_path)
 
         fasta_path = os.path.join(WORKSPACE_DIR,"fasta", "hg38.fa")
-        temp = pd.read_csv(apply_to)
-
-        #Delete after pitch(now limited to 50)
-        result_data_spliceai = add_spliceai_eval_columns(temp[:50], fasta_path)
+        spliceai_dir = os.path.join(WORKSPACE_DIR, uuid, "spliceai")
+        os.makedirs(spliceai_dir, exist_ok=True)
+        try:
+            result_data_spliceai = add_spliceai_eval_columns(pd.read_csv(apply_to,low_memory=False),
+                                                              fasta_path,
+                                                              spliceai_dir)
+        except Exception as e:
+            raise RuntimeError(f"Error applying SpliceAI algorithm: {e}")
 
         if not existing_data.empty:
             result_data_spliceai = pd.concat([existing_data, result_data_spliceai], ignore_index=True)
@@ -261,10 +265,14 @@ def get_workspace_apply_cadd(relative_path):
             else:
                 existing_data = pd.read_csv(destination_path)
 
-        temp = pd.read_csv(apply_to)
+        cadd_dir = os.path.join(WORKSPACE_DIR, uuid, "cadd")
+        os.makedirs(cadd_dir, exist_ok=True)
 
-        # Delete after pitch(now limited to 50)
-        result_data_cadd = add_cadd_eval_column(temp[:50])
+        try:
+            result_data_cadd = cadd_pipeline(pd.read_csv(apply_to,low_memory=False),
+                                             os.path.join(cadd_dir, "cadd.vcf"))
+        except Exception as e:
+            raise RuntimeError(f"Error applying CADD algorithm: {e}")
 
         if not existing_data.empty:
             result_data_cadd = pd.concat([existing_data, result_data_cadd], ignore_index=True)

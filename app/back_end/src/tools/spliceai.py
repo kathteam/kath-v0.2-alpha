@@ -44,80 +44,99 @@ Example:
 """
 import os
 import subprocess
-import tempfile
 import pandas as pd
+from datetime import datetime
+
 
 
 class SpliceAIError(Exception):
     """Custom exception for SpliceAI errors."""
 
 
-def write_vcf(data: pd.DataFrame) -> str:
+def parse_variant(variant_str):
     """
-    Writes all variant information into a temporary VCF file.
-    This function extracts chromosome and variant information from the
-    provided DataFrame and formats it into VCF format, writing it to a
-    temporary input VCF file.
+    Parses a variant string and extracts chromosome, position, reference, and alternative alleles.
+
+    The function takes a variant string in the format of `chrom-pos-ref-alt` (e.g., `1-123-A-G`), 
+    and splits it into the individual components. If the string contains only chromosome and position 
+    (e.g., `1-123`), it will assume reference and alternative alleles as missing (represented by `"."`).
 
     Args:
-        data (pd.DataFrame): DataFrame containing variant information,
-                             must include 'hg38_gnomad_format' or
-                             'variant_id_gnomad' columns.
+        variant_str (str): The variant string to be parsed, typically in the format `chrom-pos-ref-alt`.
 
     Returns:
-        str: Path to the temporary VCF file created.
+        tuple: A tuple containing:
+            - chrom (str): The chromosome part of the variant string.
+            - pos (str): The position part of the variant string.
+            - ref (str): The reference allele (or `"."` if not provided).
+            - alt (str): The alternative allele (or `"."` if not provided).
+
+    Example:
+        parse_variant("1-123-A-G")  -> ('1', '123', 'A', 'G')
+        parse_variant("1-123")      -> ('1', '123', '.', '.')
     """
-    if 'hg38_gnomad_format' not in data.columns and 'variant_id' not in data.columns:
-        raise SpliceAIError("DataFrame must contain 'hg38_gnomad_format' or 'variant_id' column.")
-
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.vcf') as vcf:
-            lines = [
-                "##fileformat=VCFv4.2\n",
-                "##fileDate=20231001\n",
-                "##reference=GRCh38\n"
-            ]
-            if 'hg38_gnomad_format' in data.columns and 'variant_id_gnomad' in data.columns:
-                variant_column = data['hg38_gnomad_format'].combine_first(
-                    data['variant_id_gnomad']).fillna('0-0-0-0')
-            else:
-                variant_column = data['variant_id'].fillna('0-0-0-0')
+        chrom, pos, ref, alt = variant_str.split("-")
+        return chrom, pos, ref, alt
+    except ValueError:
+        chrom, pos, _ = variant_str.split("-")
+        return chrom, pos, ".", "."
+    except AttributeError:
+        return ".", ".", ".", "."
 
 
-            chromosomes = variant_column.str.split('-', n=1).str[0].unique()
-            lines.extend([f"##contig=<ID={chromosome}>\n" for chromosome in chromosomes])
-            lines.append("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
+def write_vcf(dataframe:pd.DataFrame, output_filename:str)-> str:
+    """
+    Writes a VCF (Variant Call Format) file without header
+    from the given DataFrame.
 
-            split_data = variant_column.str.split('-', expand=True)
-            split_data[1] = pd.to_numeric(split_data[1], errors='coerce').fillna(0).astype(int)
+    This function extracts specific variant information
+    from a pandas DataFrame and writes it to a VCF file.
+    For each row, the function extracts the first valid variant value 
+    found in these columns, parses it, and writes the corresponding VCF line.
 
-            valid_rows = split_data[split_data[3].notna()]
+    Args:
+        dataframe (pd.DataFrame): The DataFrame containing the variant data.
+        output_filepath (str): The path where the VCF file will be saved.
 
-            rows = (
-                valid_rows[0] + "\t" +  # CHROM
-                valid_rows[1].astype(str) + "\t.\t" +  # POS
-                valid_rows[2] + "\t" +  # REF allele
-                valid_rows[3] + "\t.\t.\t.\n"  # ALT allele, QUAL, FILTER, INFO
-            )
-            lines.extend(rows.tolist())
-            vcf.write("".join(lines).encode('utf-8'))
+    Returns:
+        str: The file path where the VCF file has been written.
+    """
+    today_date = datetime.today().strftime("%Y%m%d")
+    header = (
+        "##fileformat=VCFv4.2\n"
+        f"##fileDate={today_date}\n"
+        "##reference=GRCh38\n"
+        "##contig=<ID=6,length=171115067>\n"
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+    )
+    with open(output_filename, 'w') as f:
+        f.write(header)
+        variant_columns = ["hg38_gnomad_format", "variant_id_gnomad","variant_id", "hg38_ID_clinvar"]
+        for _, row in dataframe.iterrows():
+            variant_value = None
+            for col in variant_columns:
+                if col in row and pd.notna(row[col]) and row[col]!="?":
+                    variant_value = row[col]
+                    break
+            chrom, pos, ref, alt = parse_variant(variant_value)
+            vcf_line = f"{chrom}\t{pos}\t.\t{ref}\t{alt}\t.\t.\t.\n"
+            f.write(vcf_line) 
+    return output_filename  
+    
 
-            return vcf.name
 
-    except Exception as e:
-        raise SpliceAIError(f"Failed to create input VCF file: {e}") from e
-
-
-def run_spliceai(input_vcf: str, fasta: str, distance=50, annotation="grch38") -> str:
+def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, distance=50, annotation="grch38"):
     """
     Runs SpliceAI on the provided VCF file.
 
     This function constructs and executes a SpliceAI command to analyze
     the variants in the input VCF file and writes the results to a
-    temporary output VCF file.
+    output VCF file.
 
     Args:
         input_vcf (str): Path to the input VCF file.
+        ouput_vcf (str): Path to the ouput VCF file.
         fasta (str): Path to the reference genome file in FASTA format.
         distance (int): The distance parameter for SpliceAI (default is 50).
         annotation (str): Annotation type (default is "grch38").
@@ -130,12 +149,12 @@ def run_spliceai(input_vcf: str, fasta: str, distance=50, annotation="grch38") -
     """
     if not os.path.isfile(fasta):
         raise SpliceAIError(f"FASTA file not found: {fasta}")
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.vcf') as output_vcf:
+    
+    with open(ouput_vcf, 'w') as output_vcf:
         spliceai_command = [
             "spliceai",
             "-I", input_vcf,
-            "-O", output_vcf.name,
+            "-O", ouput_vcf,
             "-R", fasta,
             "-D", str(distance),
             "-A", annotation
@@ -145,7 +164,6 @@ def run_spliceai(input_vcf: str, fasta: str, distance=50, annotation="grch38") -
             result = subprocess.run(spliceai_command, capture_output=True, text=True, check=True)
             if result.returncode != 0:
                 raise SpliceAIError(f"SpliceAI failed: {result.stderr}")
-            return output_vcf.name  # Return the path to the temporary output VCF file
         except Exception as exc:
             raise SpliceAIError(f"Error running SpliceAI: {exc}") from exc
 
@@ -174,43 +192,54 @@ def parse_spliceai_vcf(vcf_file: str):
                     continue
                 columns = line.strip().split('\t')
                 info_field = columns[7]
-                if "SpliceAI" in info_field:
-                    info_parts = info_field.split(";")
-                    for part in info_parts:
-                        if part.startswith("SpliceAI="):
-                            spliceai_values = part.split("=")[1]
-                            delta_scores = spliceai_values.split("|")
+                info_parts = info_field.split(";")
+                for part in info_parts:
+                    if part.startswith("SpliceAI="):
+                        spliceai_values = part.split("=")[1]
+                        delta_scores = spliceai_values.split("|")
 
-                            ds_ag = float(delta_scores[2])
-                            ds_al = float(delta_scores[3])
-                            ds_dg = float(delta_scores[4])
-                            ds_dl = float(delta_scores[5])
+                        ds_ag = float(delta_scores[2])
+                        ds_al = float(delta_scores[3])
+                        ds_dg = float(delta_scores[4])
+                        ds_dl = float(delta_scores[5])
 
-                            max_delta_score = max(ds_ag, ds_al, ds_dg, ds_dl)
+                        max_delta_score = max(ds_ag, ds_al, ds_dg, ds_dl)
 
-                            dp_ag = int(delta_scores[6])
-                            dp_al = int(delta_scores[7])
-                            dp_dg = int(delta_scores[8])
-                            dp_dl = int(delta_scores[9])
+                        dp_ag = int(delta_scores[6])
+                        dp_al = int(delta_scores[7])
+                        dp_dg = int(delta_scores[8])
+                        dp_dl = int(delta_scores[9])
 
-                            scores = {
-                                "Delta score (acceptor gain)": ds_ag,
-                                "Delta score (acceptor loss)": ds_al,
-                                "Delta score (donor gain)": ds_dg,
-                                "Delta score (donor loss)": ds_dl,
-                                "Delta position (acceptor gain)": int(columns[1]) + dp_ag,
-                                "Delta position (acceptor loss)": int(columns[1]) + dp_al,
-                                "Delta position (donor gain)": int(columns[1]) + dp_dg,
-                                "Delta position (donor loss)": int(columns[1]) + dp_dl,
-                                "Max_Delta_Score": max_delta_score
-                            }
-                            spliceai_scores.append(scores)
+                        scores = {
+                            "Delta score (acceptor gain)": ds_ag,
+                            "Delta score (acceptor loss)": ds_al,
+                            "Delta score (donor gain)": ds_dg,
+                            "Delta score (donor loss)": ds_dl,
+                            "Delta position (acceptor gain)": int(columns[1]) + dp_ag,
+                            "Delta position (acceptor loss)": int(columns[1]) + dp_al,
+                            "Delta position (donor gain)": int(columns[1]) + dp_dg,
+                            "Delta position (donor loss)": int(columns[1]) + dp_dl,
+                            "Max_Delta_Score": max_delta_score
+                        }
+                    else:
+                        scores = {
+                            "Delta score (acceptor gain)": None,
+                            "Delta score (acceptor loss)": None,
+                            "Delta score (donor gain)": None,
+                            "Delta score (donor loss)": None,
+                            "Delta position (acceptor gain)": None,
+                            "Delta position (acceptor loss)": None,
+                            "Delta position (donor gain)": None,
+                            "Delta position (donor loss)": None,
+                            "Max_Delta_Score": None
+                        }
+                    spliceai_scores.append(scores)
         return spliceai_scores
     except Exception as e:
         raise ValueError(f"Error parsing VCF file {vcf_file}: {e}") from e
 
 
-def add_spliceai_eval_columns(data: pd.DataFrame, fasta_path: str) -> pd.DataFrame:
+def add_spliceai_eval_columns(data: pd.DataFrame, fasta_path: str,spliceai_dir:str) -> pd.DataFrame:
     """
     Adds columns for SpliceAI evaluation to the DataFrame with a _spliceai postfix.
 
@@ -229,20 +258,15 @@ def add_spliceai_eval_columns(data: pd.DataFrame, fasta_path: str) -> pd.DataFra
         SpliceAIError: If any error occurs during the VCF processing or
                         SpliceAI execution.
     """
+    spliceai_input_vcf=os.path.join(spliceai_dir, "spliceai_input.vcf")
+    spliceai_output_vcf=os.path.join(spliceai_dir, "spliceai_output.vcf")
     data_copy = data.copy()
-    input_vcf = write_vcf(data_copy)
-    output_vcf = "spliceai_output.vcf"
-    try:
-        output_vcf = run_spliceai(input_vcf, fasta_path)
-        spliceai_scores = parse_spliceai_vcf(output_vcf)
+    input_vcf = write_vcf(data_copy,spliceai_input_vcf)
+    run_spliceai(input_vcf,spliceai_output_vcf, fasta_path)
+    spliceai_scores = parse_spliceai_vcf(spliceai_output_vcf)
 
-        scores_df = pd.DataFrame(spliceai_scores)
-        scores_df.columns = [f"{col}_spliceai" for col in scores_df.columns]
-        data_copy = pd.concat([data_copy.reset_index(drop=True),
-                               scores_df.reset_index(drop=True)], axis=1)
-    finally:
-        if os.path.exists(input_vcf):
-            os.remove(input_vcf)
-        if os.path.exists(output_vcf):
-            os.remove(output_vcf)
+    scores_df = pd.DataFrame(spliceai_scores)
+    scores_df.columns = [f"{col}_spliceai" for col in scores_df.columns]
+    data_copy = pd.concat([data_copy,
+                            scores_df], axis=1)
     return data_copy
