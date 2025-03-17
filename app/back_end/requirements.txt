@@ -28,7 +28,6 @@ redis~=5.0.8
 requests~=2.32.3
 selenium~=4.25.0
 simple-websocket~=1.0.0
-spliceai
 Werkzeug~=3.0.3
 wsproto~=1.2.0
 zope.event~=5.0
