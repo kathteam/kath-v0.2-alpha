@@ -269,8 +269,8 @@ def get_workspace_apply_cadd(relative_path):
         os.makedirs(cadd_dir, exist_ok=True)
 
         try:
-            result_data_cadd = cadd_pipeline(pd.read_csv(apply_to,low_memory=False),
-                                             os.path.join(cadd_dir, "cadd.vcf"))
+            result_data_cadd = cadd_pipeline((pd.read_csv(apply_to,low_memory=False)).convert_dtypes(),
+                                             cadd_dir)
         except Exception as e:
             raise RuntimeError(f"Error applying CADD algorithm: {e}")
 
@@ -278,6 +278,7 @@ def get_workspace_apply_cadd(relative_path):
             result_data_cadd = pd.concat([existing_data, result_data_cadd], ignore_index=True)
 
         try:
+            result_data_cadd = result_data_cadd.convert_dtypes()
             result_data_cadd.to_csv(destination_path, index=False)
         except OSError as e:
             raise RuntimeError(f"Error saving file: {e}")
