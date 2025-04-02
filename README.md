@@ -83,6 +83,10 @@ For a complete setup, follow these steps and refer to the `README.md` files in `
 
 After completing these steps, your environment should be set up and ready to run.
 
+### Knowledge base
+
+Knowledge base uses [foam](https://marketplace.visualstudio.com/items?itemName=foam.foam-vscode) plugin for [VSC IDE](https://code.visualstudio.com/) to link the information together. Information is presented as a graph. Uses .md files and can be integrated with logseq or Obsidian.
+
 ---
 
 ### 🔮 Future Work
