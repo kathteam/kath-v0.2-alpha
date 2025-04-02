@@ -62,9 +62,93 @@
               "icon": "lucide-file",
               "title": "_List of Members"
             }
+          },
+          {
+            "id": "067dfc0e001632d7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "KATH - A No-Coding Data Processing Aid for Genetic Researchers"
+            }
+          },
+          {
+            "id": "fee5aa08402da7cf",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stakeholders/Members/Justinas Teselis.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Justinas Teselis"
+            }
+          },
+          {
+            "id": "77559a72fb9f1691",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stakeholders/Members/Nojus Sajauskas.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Nojus Sajauskas"
+            }
+          },
+          {
+            "id": "4e235618fb6e123b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stakeholders/Members/Kajus Černiauskas.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Kajus Černiauskas"
+            }
+          },
+          {
+            "id": "3b3d502294938e46",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stakeholders/Members/Vladyslav Levchenko.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Vladyslav Levchenko"
+            }
+          },
+          {
+            "id": "cd433fb70ade48d3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stakeholders/Members/Paulius Preikša.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Paulius Preikša"
+            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -137,7 +221,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stakeholders/Members/_List of Members.md",
+                "file": "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -147,7 +231,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for _List of Members"
+              "title": "Backlinks for KATH - A No-Coding Data Processing Aid for Genetic Researchers"
             }
           },
           {
@@ -156,12 +240,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Stakeholders/Members/_List of Members.md",
+                "file": "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from _List of Members"
+              "title": "Outgoing links from KATH - A No-Coding Data Processing Aid for Genetic Researchers"
             }
           },
           {
@@ -185,13 +269,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Stakeholders/Members/_List of Members.md",
+                "file": "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of _List of Members"
+              "title": "Outline of KATH - A No-Coding Data Processing Aid for Genetic Researchers"
             }
           }
         ]
@@ -211,40 +295,42 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "e3100246b01f2f0e",
+  "active": "067dfc0e001632d7",
   "lastOpenFiles": [
+    "Related projects, publications & presentations/IVUS 2024/IVUS 2024 Slides.md",
+    "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
+    "Related projects, publications & presentations/Technorama 2024/Technorama 2024 Slides.md",
+    "Related projects, publications & presentations/IVUS 2025/Project management system for self-organized student research volunteer task groups.md",
+    "Related projects, publications & presentations/IVUS 2025/IVUS 2025 - Management paper.docx.pdf",
+    "KATH technorama 2024.pdf",
+    "IVUS2024 presentation.pdf",
+    "Related projects, publications & presentations/IVUS 2024/KATH_ A No-Coding Data Processing Aid for Genetic Researchers.edited.pdf",
+    "Stakeholders/Members/_List of Members.md",
+    "Related projects, publications & presentations/IVUS 2025",
+    "Related projects, publications & presentations/DAMSS 2024",
+    "Related projects, publications & presentations/Technorama 2024",
+    "Related projects, publications & presentations/IVUS 2024",
+    "Related projects, publications & presentations",
+    "Stakeholders/Members/Yehor Nesterenko.md",
+    "Stakeholders/Members/Marius Petrauskas.md",
+    "Stakeholders/Members/Justinas Teselis.md",
+    "Stakeholders/Members/Ernest Tretjakov.md",
+    "Stakeholders/Members/Eimantas Šiburkis.md",
+    "Stakeholders/Members/Ignas Sabaliauskas.md",
+    "Stakeholders/Members/Nojus Laurinaitis.md",
+    "Stakeholders/Members/Vladyslav Levchenko.md",
+    "Stakeholders/Members/Nojus Sajauskas.md",
+    "Stakeholders/Members/Kajus Černiauskas.md",
+    "Stakeholders/Members/Paulius Preikša.md",
+    "Stakeholders/Members/Mantvydas Deltuva.md",
+    "Stakeholders/Members/Gabrielius Salyga.md",
     "Tools/Eve.md",
     "Tools/CADD.md",
     "Tools/AlphaMissens.md",
     "Tools/SpliceAI.md",
     "Stakeholders/Members/Dainius Kirsnauskas.md",
-    "Stakeholders/Members/Vladyslav Levchenko.md",
-    "Stakeholders/Members/Kajus Černiauskas.md",
-    "Stakeholders/Members/Nojus Laurinaitis.md",
     "Stakeholders/Members/Ugnius Stašaitis.md",
     "Tools/_List of Tools.md",
-    "Tools/SciPy.md",
-    "Tools/Numpy.md",
-    "Tools/Pandas.md",
-    "Tools/Prosite.md",
-    "Tools/Pfam.md",
-    "Tools/Pangolin.md",
-    "Tools/REVEL.md",
-    "Stakeholders/Members/Saulius Ogenskas.md",
-    "Stakeholders/Members/Paulius Preikša.md",
-    "Stakeholders/Members/Nojus Sajauskas.md",
-    "Stakeholders/Members/Mantvydas Deltuva.md",
-    "Stakeholders/Members/Kinga M. Bujakowska.md",
-    "Stakeholders/Members/Kazimieras Bagdonas.md",
-    "Stakeholders/Members/Gerda Žemaitaitytė.md",
-    "Stakeholders/Members/Gabrielius Salyga.md",
-    "Stakeholders/Members/Eglė Galdikaitė-Brazienė.md",
-    "Information on Gene Mutations",
-    "Tools",
-    "Stakeholders/Institutions",
-    "Stakeholders/Members",
-    "Data Bases",
-    "Issues",
-    "Stakeholders"
+    "Information on Gene Mutations"
   ]
 }

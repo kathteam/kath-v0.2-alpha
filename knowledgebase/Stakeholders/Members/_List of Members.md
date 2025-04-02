@@ -4,6 +4,9 @@ Oversight
 [[Kinga M. Bujakowska]]
 
 Students:
+[[Marius Petrauskas]]
+[[Yehor Nesterenko]]
+[[Justinas Teselis]]
 [[Gabrielius Salyga]]
 [[Paulius Preikša]]
 [[Jūnius Vaitkus]]
@@ -14,6 +17,8 @@ Students:
 [[Ignas Sabaliauskas]]
 [[Vladyslav Levchenko]]
 [[Nojus Laurinaitis]]
+[[Ernest Tretjakov]]
+[[Eimantas Šiburkis]]
 
 [[Deividas Išganaitis]]
 [[Saulius Ogenskas]]

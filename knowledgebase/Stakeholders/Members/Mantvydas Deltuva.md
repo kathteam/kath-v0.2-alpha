@@ -5,4 +5,5 @@
 Status: [[Active]] since 2024 
 Email: mantvydas.deltuva@ktu.edu
 
-Contributions:
+Contributions: 
+1. [[Front-End]]
