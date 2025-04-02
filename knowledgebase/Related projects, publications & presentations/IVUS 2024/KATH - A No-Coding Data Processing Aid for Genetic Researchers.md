@@ -1,2 +1,11 @@
 [[IVUS]] [[2024]], [[Paper]]
+[[Kajus Černiauskas]]
+[[Dainius Kirsnauskas]]
+[[Paulius Preikša]]
+[[Gabrielius Salyga]]
+[[Nojus Sajauskas]]
+[[Jūnius Vaitkus]]
+[[Gerda Žemaitaitytė]]
+[[Kazimieras Bagdonas]]
+
 ![[KATH_ A No-Coding Data Processing Aid for Genetic Researchers.edited.pdf]]

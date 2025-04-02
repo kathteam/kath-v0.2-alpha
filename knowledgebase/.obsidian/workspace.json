@@ -69,12 +69,54 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
+                "file": "Stakeholders/Institutions/_List of Institutions.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "KATH - A No-Coding Data Processing Aid for Genetic Researchers"
+              "title": "_List of Institutions"
+            }
+          },
+          {
+            "id": "39ffab8b76fb6a2f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stakeholders/Institutions/University of Pisa.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "University of Pisa"
+            }
+          },
+          {
+            "id": "127c213eb8f696a0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stakeholders/Institutions/UAB Genomika.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "UAB Genomika"
+            }
+          },
+          {
+            "id": "a2048a4af9ff8a1f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_KATH Project Description.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "_KATH Project Description"
             }
           },
           {
@@ -148,7 +190,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 7
       }
     ],
     "direction": "vertical"
@@ -221,7 +263,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
+                "file": "_KATH Project Description.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -231,7 +273,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for KATH - A No-Coding Data Processing Aid for Genetic Researchers"
+              "title": "Backlinks for _KATH Project Description"
             }
           },
           {
@@ -240,12 +282,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
+                "file": "_KATH Project Description.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from KATH - A No-Coding Data Processing Aid for Genetic Researchers"
+              "title": "Outgoing links from _KATH Project Description"
             }
           },
           {
@@ -269,13 +311,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
+                "file": "_KATH Project Description.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of KATH - A No-Coding Data Processing Aid for Genetic Researchers"
+              "title": "Outline of _KATH Project Description"
             }
           }
         ]
@@ -295,15 +337,24 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "067dfc0e001632d7",
+  "active": "a2048a4af9ff8a1f",
   "lastOpenFiles": [
-    "Related projects, publications & presentations/IVUS 2024/IVUS 2024 Slides.md",
-    "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
+    "Stakeholders/Members/Giuseppe Prencipe.md",
+    "Stakeholders/Members/Daniele Mazzei.md",
+    "Stakeholders/Members/Eglė Galdikaitė-Brazienė.md",
+    "Stakeholders/Members/Lukas Žemaitis.md",
+    "Stakeholders/Institutions/UAB Genomika.md",
+    "Stakeholders/Institutions/University of Pisa.md",
+    "Stakeholders/Institutions/_List of Institutions.md",
+    "Related projects, publications & presentations/IVUS.md",
+    "Related projects, publications & presentations/Technorama.md",
     "Related projects, publications & presentations/Technorama 2024/Technorama 2024 Slides.md",
+    "Related projects, publications & presentations/Technorama 2024/KATH technorama 2024.pdf",
     "Related projects, publications & presentations/IVUS 2025/Project management system for self-organized student research volunteer task groups.md",
+    "Related projects, publications & presentations/IVUS 2024/IVUS 2024 Slides.md",
+    "Related projects, publications & presentations/IVUS 2024/IVUS2024 presentation.pdf",
+    "Related projects, publications & presentations/IVUS 2024/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
     "Related projects, publications & presentations/IVUS 2025/IVUS 2025 - Management paper.docx.pdf",
-    "KATH technorama 2024.pdf",
-    "IVUS2024 presentation.pdf",
     "Related projects, publications & presentations/IVUS 2024/KATH_ A No-Coding Data Processing Aid for Genetic Researchers.edited.pdf",
     "Stakeholders/Members/_List of Members.md",
     "Related projects, publications & presentations/IVUS 2025",
@@ -323,14 +374,6 @@
     "Stakeholders/Members/Kajus Černiauskas.md",
     "Stakeholders/Members/Paulius Preikša.md",
     "Stakeholders/Members/Mantvydas Deltuva.md",
-    "Stakeholders/Members/Gabrielius Salyga.md",
-    "Tools/Eve.md",
-    "Tools/CADD.md",
-    "Tools/AlphaMissens.md",
-    "Tools/SpliceAI.md",
-    "Stakeholders/Members/Dainius Kirsnauskas.md",
-    "Stakeholders/Members/Ugnius Stašaitis.md",
-    "Tools/_List of Tools.md",
-    "Information on Gene Mutations"
+    "Information on Genetics"
   ]
 }
