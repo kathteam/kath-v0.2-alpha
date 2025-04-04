@@ -1,3 +1,5 @@
+STATUS: [[Integrated]]
+
 [Origin](https://cadd.gs.washington.edu/)
 
 **Purpose**: CADD is a tool for scoring the deleteriousness of single [[nucleotide variants]], [[multi-nucleotide substitutions]] as well as [[insertion]]/[[deletions]] variants in the [[human genome]].

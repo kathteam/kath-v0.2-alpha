@@ -1,3 +1,5 @@
+STATUS: [[Not-Integrated]]
+
 [Repo](https://github.com/google-deepmind/alphamissense)
 
 **Purpose**: [[AI model]] that predicts whether genetic mutations in proteins are likely to be harmless or disease-causing.
