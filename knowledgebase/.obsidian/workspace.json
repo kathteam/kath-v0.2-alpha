@@ -6,7 +6,6 @@
       {
         "id": "541ca1e154b30d34",
         "type": "tabs",
-        "dimension": 38.565891472868216,
         "children": [
           {
             "id": "f7741db330472219",
@@ -56,60 +55,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_KATH Project Description.md",
+                "file": "Genetics DataBases/ClinVar.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "_KATH Project Description"
+              "title": "ClinVar"
+            }
+          },
+          {
+            "id": "3bee8e24f8ba04c2",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           }
         ],
-        "currentTab": 3
-      },
-      {
-        "id": "342043ee129ef33a",
-        "type": "tabs",
-        "dimension": 61.434108527131784,
-        "children": [
-          {
-            "id": "8eb5624bf23ea6b9",
-            "type": "leaf",
-            "state": {
-              "type": "localgraph",
-              "state": {
-                "file": "_KATH Project Description.md",
-                "options": {
-                  "collapse-filter": false,
-                  "search": "",
-                  "localJumps": 2,
-                  "localBacklinks": true,
-                  "localForelinks": true,
-                  "localInterlinks": false,
-                  "showTags": false,
-                  "showAttachments": false,
-                  "hideUnresolved": false,
-                  "collapse-color-groups": true,
-                  "colorGroups": [],
-                  "collapse-display": true,
-                  "showArrow": false,
-                  "textFadeMultiplier": 0,
-                  "nodeSizeMultiplier": 1,
-                  "lineSizeMultiplier": 1,
-                  "collapse-forces": true,
-                  "centerStrength": 0.518713248970312,
-                  "repelStrength": 10,
-                  "linkStrength": 1,
-                  "linkDistance": 250,
-                  "scale": 0.7132754626224432,
-                  "close": false
-                }
-              },
-              "icon": "lucide-git-fork",
-              "title": "Graph of _KATH Project Description"
-            }
-          }
-        ]
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -253,42 +218,43 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "587575d32bdb90c8",
+  "active": "3bee8e24f8ba04c2",
   "lastOpenFiles": [
-    "Related projects, publications & presentations/2025 BSc Thesis/Cloud-Based System of Web Platform for KATH project.md",
+    "Misc Info/Student.md",
+    "Stakeholders/Members/Mantvydas Deltuva.md",
+    "Tools/CADD.md",
+    "Tools/AlphaMissens.md",
+    "Misc Info/Genetics Database.md",
+    "Genetics DataBases/LOVD.md",
+    "Genetics DataBases/ClinVar.md",
+    "Genetics DataBases/gnomAD.md",
+    "Misc Info/BSc Thesis.md",
+    "Misc Info/IVUS.md",
+    "Misc Info/Project management.md",
+    "Misc Info/Presentation.md",
+    "Related projects, publications & presentations/2024 IVUS/IVUS 2024 Slides.md",
+    "Misc Info/2024.md",
+    "Misc Info/2025.md",
+    "Related projects, publications & presentations/2025 IVUS/Project management system for self-organized student research volunteer task groups.md",
+    "Related projects, publications & presentations/2025 IVUS/IVUS 2025 - Management paper.docx.pdf",
     "Related projects, publications & presentations/_BSc Thesis list.md",
+    "Related projects, publications & presentations/_Papers List.md",
+    "Misc Info/Paper.md",
+    "Misc Info/Technorama.md",
+    "Related projects, publications & presentations/_Technorama project list.md",
+    "Related projects, publications & presentations/2025 BSc Thesis/Cloud-Based System of Web Platform for KATH project.md",
+    "Misc Info",
+    "_KATH Project Description.md",
     "Related projects, publications & presentations/2024 Technorama/KATH technorama 2024.pdf",
     "Related projects, publications & presentations/2024 Technorama/Technorama 2024 Slides.md",
     "Related projects, publications & presentations/_PVP Project List.md",
     "Related projects, publications & presentations/_BSc Thesis List.md",
-    "Related projects, publications & presentations/_Technorama Project List.md",
-    "Related projects, publications & presentations/_Technorama project list.md",
-    "Related projects, publications & presentations/_Papers List.md",
-    "Related projects, publications & presentations/_Presentations List.md",
-    "Related projects, publications & presentations/IVUS.md",
-    "Stakeholders/Members/Paulius Preikša.md",
     "Related projects, publications & presentations/2025 BSc Thesis",
     "Related projects, publications & presentations/2025 PVP project",
     "Related projects, publications & presentations/2024 Technorama",
-    "Related projects, publications & presentations/2025 IVUS/Project management system for self-organized student research volunteer task groups.md",
-    "Related projects, publications & presentations/2025 IVUS/IVUS 2025 - Management paper.docx.pdf",
     "Related projects, publications & presentations/2025 IVUS",
     "Related projects, publications & presentations/2024 IVUS/KATH_ A No-Coding Data Processing Aid for Genetic Researchers.edited.pdf",
-    "Related projects, publications & presentations/2024 IVUS/KATH - A No-Coding Data Processing Aid for Genetic Researchers.md",
     "Related projects, publications & presentations/2024 IVUS/IVUS2024 presentation.pdf",
-    "Related projects, publications & presentations/2024 IVUS/IVUS 2024 Slides.md",
-    "Related projects, publications & presentations/2024 IVUS",
-    "Related projects, publications & presentations/2024 DAMSS",
-    "Paper.md",
-    "Related projects, publications & presentations/IVUS 2025/Project management system for self-organized student research volunteer task groups.md",
-    "Stakeholders/Members/Eimantas Šiburkis.md",
-    "Stakeholders/Members/Gerda Žemaitaitytė.md",
-    "Tools/SpliceAI.md",
-    "Tools/SciPy.md",
-    "Tools/REVEL.md",
-    "Tools/Prosite.md",
-    "Tools/Pfam.md",
-    "Tools/Pandas.md",
-    "Tools/Numpy.md"
+    "Related projects, publications & presentations/2024 IVUS"
   ]
 }

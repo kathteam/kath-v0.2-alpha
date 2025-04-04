@@ -1,0 +1,1 @@
+[[Innovation exhibition]], [[Kaunas University of Technology]]
