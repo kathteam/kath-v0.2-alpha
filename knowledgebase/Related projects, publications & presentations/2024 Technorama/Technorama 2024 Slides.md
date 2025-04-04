@@ -1,4 +1,4 @@
-[[Technorama]] [[2024]], [[Technorama 2024 Slides]]
+[[_Technorama Project List]] [[2024]], [[Technorama 2024 Slides]]
 [[Kazimieras Bagdonas]] 
 [[Ignas Sabaliauskas]] 
 [[Dainius Kirsnauskas]] 
