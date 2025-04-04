@@ -48,145 +48,9 @@
               "icon": "lucide-file",
               "title": "Ugnius Stašaitis"
             }
-          },
-          {
-            "id": "e3100246b01f2f0e",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stakeholders/Members/_List of Members.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "_List of Members"
-            }
-          },
-          {
-            "id": "067dfc0e001632d7",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stakeholders/Institutions/_List of Institutions.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "_List of Institutions"
-            }
-          },
-          {
-            "id": "39ffab8b76fb6a2f",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stakeholders/Institutions/University of Pisa.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "University of Pisa"
-            }
-          },
-          {
-            "id": "127c213eb8f696a0",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stakeholders/Institutions/UAB Genomika.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "UAB Genomika"
-            }
-          },
-          {
-            "id": "a2048a4af9ff8a1f",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
-            }
-          },
-          {
-            "id": "fee5aa08402da7cf",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stakeholders/Members/Justinas Teselis.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Justinas Teselis"
-            }
-          },
-          {
-            "id": "77559a72fb9f1691",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stakeholders/Members/Nojus Sajauskas.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Nojus Sajauskas"
-            }
-          },
-          {
-            "id": "4e235618fb6e123b",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stakeholders/Members/Kajus Černiauskas.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Kajus Černiauskas"
-            }
-          },
-          {
-            "id": "3b3d502294938e46",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stakeholders/Members/Vladyslav Levchenko.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Vladyslav Levchenko"
-            }
-          },
-          {
-            "id": "cd433fb70ade48d3",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stakeholders/Members/Paulius Preikša.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Paulius Preikša"
-            }
           }
         ],
-        "currentTab": 7
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -330,8 +194,26 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "a2048a4af9ff8a1f",
+  "active": "2d0725fdb1c46346",
   "lastOpenFiles": [
+    "Genetics DataBases/_List of databases.md",
+    "Genetics DataBases/LOVD.md",
+    "Genetics DataBases/gnomAD.md",
+    "Genetics DataBases/ClinVar.md",
+    "Genetics DataBases",
+    "Stakeholders/Associate professor.md",
+    "Related projects, publications & presentations/Technorama.md",
+    "Related projects, publications & presentations/IVUS.md",
+    "Related projects, publications & presentations/IVUS 2025/IVUS.md",
+    "Related projects, publications & presentations/Technorama 2024/Technorama.md",
+    "Stakeholders/Positions/Associate professor.md",
+    "Stakeholders/Positions",
+    "Stakeholders/New folder",
+    "Stakeholders/Institutions/University of Pisa.md",
+    "Stakeholders/Institutions/UAB Genomika.md",
+    "Stakeholders/Members/Vladyslav Levchenko.md",
+    "Stakeholders/Members/Kajus Černiauskas.md",
+    "Stakeholders/Members/Nojus Sajauskas.md",
     "Tools/SpliceAI.md",
     "Associate professor.md",
     "Tools/SciPy.md",
@@ -343,30 +225,12 @@
     "Tools/Numpy.md",
     "Tools/MyVariant.md",
     "Tools/External API's.md",
-    "Tools/Eve.md",
-    "Tools/CADD.md",
-    "Tools/AlphaMissens.md",
-    "_KATH Project Description.md",
-    "Stakeholders/Members/Giuseppe Prencipe.md",
-    "Stakeholders/Members/Daniele Mazzei.md",
-    "Stakeholders/Members/Eglė Galdikaitė-Brazienė.md",
-    "Stakeholders/Members/Lukas Žemaitis.md",
-    "Stakeholders/Institutions/UAB Genomika.md",
-    "Stakeholders/Institutions/University of Pisa.md",
-    "Stakeholders/Institutions/_List of Institutions.md",
-    "Related projects, publications & presentations/IVUS.md",
-    "Related projects, publications & presentations/Technorama.md",
-    "Related projects, publications & presentations/Technorama 2024/Technorama 2024 Slides.md",
     "Related projects, publications & presentations/Technorama 2024/KATH technorama 2024.pdf",
-    "Related projects, publications & presentations/IVUS 2025/Project management system for self-organized student research volunteer task groups.md",
     "Related projects, publications & presentations/IVUS 2024/IVUS2024 presentation.pdf",
     "Related projects, publications & presentations/IVUS 2025/IVUS 2025 - Management paper.docx.pdf",
     "Related projects, publications & presentations/IVUS 2024/KATH_ A No-Coding Data Processing Aid for Genetic Researchers.edited.pdf",
     "Related projects, publications & presentations/IVUS 2025",
     "Related projects, publications & presentations/DAMSS 2024",
-    "Related projects, publications & presentations/Technorama 2024",
-    "Related projects, publications & presentations/IVUS 2024",
-    "Related projects, publications & presentations",
-    "Information on Genetics"
+    "Related projects, publications & presentations/Technorama 2024"
   ]
 }
