@@ -75,7 +75,7 @@ export const FileTreeView: React.FC = () => {
             onClick={(event) => handleOpenContextMenu(event)}
             sx={{ mb: '1.5rem' }}
           >
-            New
+            Import file
           </Button>
           <FileTreeItemContextMenu
             item={{ id: '', label: '', fileType: undefined }}
