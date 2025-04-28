@@ -9,3 +9,11 @@ app/back_end/src/workspace/revel
 
 # large gene reference files
 *.fa
+*.gz
+*.zip
+**/revel_with_transcript_ids
+
+./hg19ToHg38.over.chain*
+./hg38.fa*
+./revel_with_transcript_ids*
+./revel-v1.3_all_chromosomes.zip

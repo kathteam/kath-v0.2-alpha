@@ -69,11 +69,11 @@ def create_app():
     socketio.init_app(
         app,
         async_mode="gevent",
-        cors_allowed_origins=env.get_origins(),
+        cors_allowed_origins="*",
         message_queue=env.get_redis_url(),
         max_http_buffer_size=50 * 1024 * 1024,
     )
-    cors.init_app(app, resources={r"*": {"origins": env.get_origins()}})
+    cors.init_app(app, resources={r"*": {"origins": "*"}})
 
     # Set up event handlers
     eventer()
