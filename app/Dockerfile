@@ -52,7 +52,10 @@ COPY --link=true --from=files /revel_with_transcript_ids    ./back_end/src/works
 
 # COPY --link=true ./hg19ToHg38.over.chain.gz     /root/.pyliftover/
 # COPY --link=true ./hg38.fa                      ./back_end/src/workspace/fasta/
-# COPY --link=true ./revel_with_transcript_ids    ./back_end/src/workspace/revel
+# COPY --link=true ./revel_with_transcript_ids    ./back_end/src/workspace/revel/
+
+COPY ./back_end/src/scripts/revel.py ./back_end/src/scripts/revel.py
+RUN python3 ./back_end/src/scripts/revel.py ./back_end/src/workspace/revel/revel_with_transcript_ids ./back_end/src/workspace/revel/revel_with_transcript_ids.db
 
 COPY ./run.sh ./
 COPY ./back_end/ ./back_end/
