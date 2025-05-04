@@ -2,6 +2,7 @@ import {
   EditorColumnMenu,
   EditorConfirmLeave,
   EditorHeader,
+  EditorPaginationBar,
   EditorToolbar,
 } from '@/features/editor/components/editorView';
 import { useWorkspaceContext } from '@/features/editor/hooks';
@@ -154,12 +155,12 @@ export const EditorView: React.FC = () => {
 
   const handleFilter = async (column: string, operator: FilterEnum, value: string) => {
     fileStateUpdate(undefined, { ...fileContent, filters: { [column]: { operator, value } } }, undefined);
-  }
+  };
 
   const handleFilterClear = async () => {
     fileStateUpdate(undefined, { ...fileContent, filters: {} }, undefined);
-  }
-  
+  };
+
   const onCellEditStart = () => {
     unsavedStateUpdate(true);
   };
@@ -200,7 +201,7 @@ export const EditorView: React.FC = () => {
   useEffect(() => {
     fileStateUpdate(
       undefined,
-      { columns: fileContent.columns, rows: fileContent.rows, aggregations: {}, sorts: {}, filters: {}}, // TODO might need change on sorts and filters
+      { columns: fileContent.columns, rows: fileContent.rows, aggregations: {}, sorts: {}, filters: {} }, // TODO might need change on sorts and filters
       undefined
     );
   }, [file.id]);
@@ -212,7 +213,13 @@ export const EditorView: React.FC = () => {
     if (!header) {
       fileStateUpdate(
         undefined,
-        { columns: [], rows: [], aggregations: fileContent.aggregations, sorts: fileContent.sorts, filters: fileContent.filters },
+        {
+          columns: [],
+          rows: [],
+          aggregations: fileContent.aggregations,
+          sorts: fileContent.sorts,
+          filters: fileContent.filters,
+        },
         undefined
       );
       return;
@@ -238,7 +245,7 @@ export const EditorView: React.FC = () => {
 
     const parsedRows = rows.map((row, index) => {
       return {
-        "internal_datagrid_id": index,
+        internal_datagrid_id: index,
         ...row.reduce((acc, value, index) => {
           return { ...acc, [header[index]]: value };
         }, {}),
@@ -247,7 +254,13 @@ export const EditorView: React.FC = () => {
 
     fileStateUpdate(
       undefined,
-      { columns: parsedColumns, rows: parsedRows, aggregations: fileContent.aggregations, sorts: fileContent.sorts, filters: fileContent.filters },
+      {
+        columns: parsedColumns,
+        rows: parsedRows,
+        aggregations: fileContent.aggregations,
+        sorts: fileContent.sorts,
+        filters: fileContent.filters,
+      },
       { page: filePagination.page, rowsPerPage: filePagination.rowsPerPage, totalRows: totalRows }
     );
   }, [fileContentResponse, fileContent.aggregations, fileContent.sorts, fileContent.filters]);
@@ -334,6 +347,9 @@ export const EditorView: React.FC = () => {
         }}
         slotProps={{
           toolbar: {},
+          pagination: {
+            ActionsComponent: EditorPaginationBar,
+          },
         }}
         apiRef={ref}
         onCellEditStart={onCellEditStart}
