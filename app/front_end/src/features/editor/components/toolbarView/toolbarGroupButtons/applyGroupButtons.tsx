@@ -25,16 +25,17 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
 
     try {
       const timestamp = generateTimestamp();
-      const savePath = saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `spliceai_${timestamp}.csv`);
+      const savePath =
+        saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `spliceai_${timestamp}.csv`);
       if (getFileExtension(savePath) !== 'csv') {
         saveToErrorStateUpdate('Select .csv');
-        return
+        return;
       }
 
       await axios.get(`${Endpoints.WORKSPACE_APPLY}/spliceai/${savePath}`, {
         params: {
           override,
-          "applyTo": applyTo.id,
+          applyTo: applyTo.id,
         },
       });
     } catch (error) {
@@ -54,16 +55,17 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
 
     try {
       const timestamp = generateTimestamp();
-      const savePath = saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `cadd_${timestamp}.csv`);
+      const savePath =
+        saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `cadd_${timestamp}.csv`);
       if (getFileExtension(savePath) !== 'csv') {
         saveToErrorStateUpdate('Select .csv');
-        return
+        return;
       }
 
       await axios.get(`${Endpoints.WORKSPACE_APPLY}/cadd/${savePath}`, {
         params: {
           override,
-          "applyTo": applyTo.id,
+          applyTo: applyTo.id,
         },
       });
     } catch (error) {
@@ -83,16 +85,17 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
 
     try {
       const timestamp = generateTimestamp();
-      const savePath = saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `revel_${timestamp}.csv`);
+      const savePath =
+        saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `revel_${timestamp}.csv`);
       if (getFileExtension(savePath) !== 'csv') {
         saveToErrorStateUpdate('Select .csv');
-        return
+        return;
       }
 
       await axios.get(`${Endpoints.WORKSPACE_APPLY}/revel/${savePath}`, {
         params: {
           override,
-          "applyTo": applyTo.id,
+          applyTo: applyTo.id,
         },
       });
     } catch (error) {
@@ -102,8 +105,44 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
     }
   }, [saveTo, override, applyTo]);
 
+  const applyAllClick = useCallback(async () => {
+    if (!applyTo) {
+      applyErrorStateUpdate('Please select a file');
+      return;
+    }
+
+    blockedStateUpdate(true);
+
+    try {
+      const timestamp = generateTimestamp();
+      const savePath =
+        saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `apply_all_${timestamp}.csv`);
+      if (getFileExtension(savePath) !== 'csv') {
+        saveToErrorStateUpdate('Select .csv');
+        return;
+      }
+
+      await axios.get(`${Endpoints.WORKSPACE_APPLY}/all/${savePath}`, {
+        params: {
+          override,
+          applyTo: applyTo.id,
+        },
+      });
+    } catch (error) {
+      console.error('Error applying ALL:', error);
+    } finally {
+      blockedStateUpdate(false);
+    }
+  }, [saveTo, override, applyTo]);
+
   const buttons: ToolbarGroupItemProps[] = useMemo(
     () => [
+      {
+        group: 'apply',
+        icon: DeblurIcon,
+        label: 'Apply All',
+        onClick: applyAllClick,
+      },
       {
         group: 'apply',
         icon: DeblurIcon,

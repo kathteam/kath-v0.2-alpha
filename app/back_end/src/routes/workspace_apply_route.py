@@ -7,6 +7,7 @@ workspace.
 # pylint: disable=broad-exception-caught
 
 import os
+import time
 import pandas as pd
 from flask import Blueprint, request, jsonify
 
@@ -515,3 +516,121 @@ def get_workspace_apply_revel(relative_path):
         return jsonify({"error": "An internal error occurred"}), 500
 
     return jsonify({"message": "REVEL algorithm was successfully applied"}), 200
+
+
+@workspace_apply_route_bp.route(
+    f"{WORKSPACE_APPLY_ROUTE}/all/<path:relative_path>", methods=["GET"]
+)
+def get_workspace_apply_all(relative_path):
+    """
+    Route to apply the ALL algorithms to a file and save the result to the workspace.
+    """
+ 
+    # Check if 'uuid' and 'sid' are provided in the headers
+    if "uuid" not in request.headers or "sid" not in request.headers:
+        return jsonify({"error": "UUID and SID headers are required"}), 400
+ 
+    uuid = request.headers.get("uuid")
+    sid = request.headers.get("sid")
+ 
+    # Check if 'override' and 'applyTo' are provided
+    if "override" not in request.args or "applyTo" not in request.args:
+        return (
+            jsonify({"error": "'override', and 'applyTo' parameters are required"}),
+            400,
+        )
+
+ 
+    destination_path = os.path.join(WORKSPACE_DIR, uuid, relative_path)
+    override = request.args.get("override")
+    apply_to = os.path.join(WORKSPACE_DIR, uuid, request.args.get("applyTo"))
+ 
+    try:
+        # Emit a feedback to the user's console
+        socketio_emit_to_user_session(
+            CONSOLE_FEEDBACK_EVENT,
+            {
+                "type": "info",
+                "message": f"Applying ALL algorithms to '{relative_path}' with "
+                + f"override: `{override}'...",
+            },
+            uuid,
+            sid,
+        )
+ 
+        #
+        # TODO: Implement ALL algorithm apply and save logic using defined parameters
+        # [destination_path, override, apply_to]
+        #
+ 
+        # TODO: Remove this sleep statement once the apply logic is implemented
+        time.sleep(1)  # Simulate a delay for the apply process
+ 
+        # Emit a feedback to the user's console
+        socketio_emit_to_user_session(
+            CONSOLE_FEEDBACK_EVENT,
+            {
+                "type": "succ",
+                "message": f"ALL algorithms were successfully applied to '{relative_path}'.",
+            },
+            uuid,
+            sid,
+        )
+ 
+        socketio_emit_to_user_session(
+            WORKSPACE_UPDATE_FEEDBACK_EVENT,
+            {"status": "updated"},
+            uuid,
+            sid,
+         )
+ 
+    except FileNotFoundError as e:
+        logger.error(
+             "FileNotFoundError: %s while applying ALL algorithms %s", e, destination_path
+        )
+        # Emit a feedback to the user's console
+        socketio_emit_to_user_session(
+            CONSOLE_FEEDBACK_EVENT,
+            {
+                "type": "errr",
+                "message": f"FileNotFoundError: {e} while applying ALL algorithms "
+                + f"{destination_path}",
+            },
+            uuid,
+            sid,
+        )
+        return jsonify({"error": "Requested file not found"}), 404
+    except PermissionError as e:
+        logger.error(
+            "PermissionError: %s while applying ALL algorithms %s", e, destination_path
+        )
+        # Emit a feedback to the user's console
+        socketio_emit_to_user_session(
+            CONSOLE_FEEDBACK_EVENT,
+            {
+                "type": "errr",
+                "message": f"PermissionError: {e} while applying ALL algorithms "
+                + f"{destination_path}",
+            },
+            uuid,
+            sid,
+        )
+        return jsonify({"error": "Permission denied"}), 403
+    except UnexpectedError as e:
+        logger.error(
+            "UnexpectedError: %s while applying ALL algorithms %s", e.message, destination_path
+        )
+        # Emit a feedback to the user's console
+        socketio_emit_to_user_session(
+            CONSOLE_FEEDBACK_EVENT,
+            {
+                "type": "errr",
+                "message": f"UnexpectedError: {e.message} while applying ALL algorithms "
+                + f"{destination_path}",
+            },
+            uuid,
+            sid,
+        )
+        return jsonify({"error": "An internal error occurred"}), 500
+ 
+    return jsonify({"message": "ALL algorithms were successfully applied"}), 200
