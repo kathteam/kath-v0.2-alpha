@@ -2,7 +2,7 @@ import {
   EditorColumnMenu,
   EditorConfirmLeave,
   EditorHeader,
-  EditorPaginationBar,
+  EditorPaginationBarActions,
   EditorToolbar,
 } from '@/features/editor/components/editorView';
 import { useWorkspaceContext } from '@/features/editor/hooks';
@@ -348,7 +348,7 @@ export const EditorView: React.FC = () => {
         slotProps={{
           toolbar: {},
           pagination: {
-            ActionsComponent: EditorPaginationBar,
+            ActionsComponent: EditorPaginationBarActions,
           },
         }}
         apiRef={ref}

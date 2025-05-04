@@ -8,6 +8,6 @@ export type { EditorColumnMenuSortItemProps } from './editorColumnMenuSortItem';
 export { EditorConfirmLeave } from './editorConfirmLeave';
 export { EditorHeader } from './editorHeader';
 export type { EditorHeaderProps } from './editorHeader';
-export { EditorPaginationBar } from './editorPaginationBar';
+export { EditorPaginationBarActions } from './editorPaginationBarActions';
 export { EditorToolbar } from './editorToolbar';
 export { EditorView } from './editorView';

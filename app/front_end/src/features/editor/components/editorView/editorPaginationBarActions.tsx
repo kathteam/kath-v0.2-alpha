@@ -3,7 +3,7 @@ import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import { Box, IconButton } from '@mui/material';
 
-interface TablePaginationActionsProps {
+interface EditorPaginationBarActionsProps {
   count: number;
   page: number;
   rowsPerPage: number;
@@ -11,7 +11,7 @@ interface TablePaginationActionsProps {
   disabled?: boolean;
 }
 
-export function EditorPaginationBar(props: TablePaginationActionsProps) {
+export function EditorPaginationBarActions(props: EditorPaginationBarActionsProps) {
   const { count, page, rowsPerPage, onPageChange, disabled } = props;
 
   const handleFirstPageButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
