@@ -95,7 +95,8 @@ def get_workspace_apply_spliceai(relative_path):
         spliceai_dir = os.path.join(WORKSPACE_DIR, uuid, "spliceai")
         os.makedirs(spliceai_dir, exist_ok=True)
         try:
-            result_data_spliceai = add_spliceai_eval_columns(pd.read_csv(apply_to,low_memory=False),
+            data_copy = pd.read_csv(apply_to).convert_dtypes()
+            result_data_spliceai = add_spliceai_eval_columns(data_copy,
                                                               fasta_path,
                                                               spliceai_dir)
         except Exception as e:
@@ -103,7 +104,7 @@ def get_workspace_apply_spliceai(relative_path):
 
         if not existing_data.empty:
             result_data_spliceai = pd.concat([existing_data, result_data_spliceai], ignore_index=True)
-
+        result_data_spliceai = result_data_spliceai.convert_dtypes()
         try:
             result_data_spliceai.to_csv(destination_path, index=False)
         except OSError as e:
@@ -276,7 +277,7 @@ def get_workspace_apply_cadd(relative_path):
 
         if not existing_data.empty:
             result_data_cadd = pd.concat([existing_data, result_data_cadd], ignore_index=True)
-
+        result_data_cadd = result_data_cadd.convert_dtypes()
         try:
             result_data_cadd = result_data_cadd.convert_dtypes()
             result_data_cadd.to_csv(destination_path, index=False)
