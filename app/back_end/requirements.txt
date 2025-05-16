@@ -34,3 +34,4 @@ zope.event~=5.0
 zope.interface~=7.0.1
 zstandard~=0.23.0 
 tqdm
+tensorflow

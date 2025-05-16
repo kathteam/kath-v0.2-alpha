@@ -661,3 +661,63 @@ def parse_clinvar(rows: list[list[str]], variation_archives: list[ET.Element]):
 
         # Append row to rows
         rows.append(row)
+
+
+def process_genomic_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Aggregates genomic variant data by unique genomic position (gen_pos), counting occurrences
+    across different data sources, and retaining key annotation fields.
+
+    Args:
+        df: Input DataFrame containing raw variant records with columns for different position
+            identifiers and annotation fields.
+    Returns:
+        final_df: DataFrame indexed by unique genomic position (gen_pos), with count columns for
+            each source (LOVD_count, gnomAD_count, ClinVar_count) and the specified annotation columns.
+    """
+    position_cols = {
+        "hg38_gnomad_format": "LOVD_count",
+        "variant_id_gnomad": "gnomAD_count",
+        "hg38_ID_clinvar": "ClinVar_count"
+    }
+    annotation_cols = [
+        "VariantOnTranscript/DNA",
+        "VariantOnTranscript/Protein",
+        "VariantOnGenome/ClinicalClassification",
+        "Germline classification_clinvar",
+        "Allele Frequency_gnomad",
+        "Popmax_gnomad",
+        "Popmax population_gnomad"
+    ]
+    melted = df.melt(
+        id_vars=annotation_cols,
+        value_vars=list(position_cols.keys()),
+        var_name='source_col',
+        value_name='gen_pos'
+    )
+    melted = melted.dropna(subset=['gen_pos'])
+    counts = (
+        melted
+        .groupby(['gen_pos', 'source_col'])
+        .size()
+        .unstack(fill_value=0)
+        .rename(columns=position_cols)
+    )
+    for count_col in position_cols.values():
+        if count_col not in counts:
+            counts[count_col] = 0
+    annotations = (
+        melted
+        .sort_values('gen_pos')
+        .groupby('gen_pos')[annotation_cols]
+        .first()
+    )
+    final_df = (
+        counts
+        .join(annotations)
+        .reset_index()
+        .rename(columns={'gen_pos': 'gen_pos'})
+    )
+    cols = ['gen_pos'] + annotation_cols + list(position_cols.values())
+    final_df = final_df[cols]
+    return final_df
