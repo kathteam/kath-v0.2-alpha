@@ -63,7 +63,7 @@ def write_vcf(dataframe: pd.DataFrame, output_filepath: str) -> str:
     """
     seen_variants = set()
     with open(output_filepath, 'w', encoding='utf-8') as f:
-        variant_columns = ["hg38_gnomad_format", "variant_id_gnomad", "hg38_ID_clinvar"]
+        variant_columns = ["gen_pos"]
         for row in dataframe.itertuples(index=False):
             variant_value = next(
             (getattr(row,col) for col in variant_columns
@@ -329,28 +329,6 @@ def parse_tsv(file_path:str)->pd.DataFrame:
     return df[['cadd_gen_position', 'PHRED']]
 
 
-def create_position(row):
-    """
-    Extracts the first non-null, non-empty genomic position identifier from the given row.
-
-    This function checks specific columns in the input row (`hg38_gnomad_format`, 
-    `variant_id_gnomad`, and `hg38_ID_clinvar`) and returns the first encountered 
-    value that is not NaN and not an empty string. If all columns are empty or NaN, 
-    it returns None.
-
-    Args:
-        row (pd.Series): A Pandas Series representing a row of a DataFrame.
-
-    Returns:
-        str or None: The first valid position identifier found in the specified columns, 
-        or None if all are empty or NaN.
-    """
-    for col in ['hg38_gnomad_format', 'variant_id_gnomad', 'hg38_ID_clinvar']:
-        if pd.notna(row[col]) and row[col] != '':
-            return row[col]
-    return None
-
-
 def merge_with_tsv(data_chunk:pd.DataFrame, tsv_chunk):
     """
     Merges the given data_chunk with the tsv_chunk DataFrame based on matching values
@@ -370,13 +348,15 @@ def merge_with_tsv(data_chunk:pd.DataFrame, tsv_chunk):
         pd.DataFrame: The merged DataFrame based on the matching positions.
     """
 
-    data_chunk['cadd_gen_position'] = data_chunk.apply(create_position, axis=1)
-    merged_df = pd.merge(data_chunk, tsv_chunk[['cadd_gen_position', 'PHRED']],
-                         on='cadd_gen_position', how='left')
-    merged_df['PHRED'] = merged_df['PHRED'].fillna('Cadd score unavailable')
-    merged_df.drop(columns=['cadd_gen_position'])
-
-    return merged_df
+    merged_df = pd.merge(
+        data_chunk,
+        tsv_chunk[['cadd_gen_position', 'PHRED']],
+        left_on='gen_pos',
+        right_on='cadd_gen_position',
+        how='left'
+    )
+    
+    return merged_df.drop(columns=['cadd_gen_position'])
 
 
 def cadd_pipeline(dataframe: pd.DataFrame, cadd_folder_path: str) -> pd.DataFrame:
