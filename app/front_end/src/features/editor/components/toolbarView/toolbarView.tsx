@@ -6,11 +6,13 @@ import {
 } from '@/features/editor/components/toolbarView';
 import {
   ApplyGroupButtons,
+  AutomaticGroupButtons,
   DownloadGroupButtons,
   MergeGroupButtons,
 } from '@/features/editor/components/toolbarView/toolbarGroupButtons';
 import {
   ApplyGroupParams,
+  AutomaticGroupParams,
   DownloadGroupParams,
   MergeGroupParams,
 } from '@/features/editor/components/toolbarView/toolbarGroupParams';
@@ -38,9 +40,14 @@ import React, { useMemo, useState } from 'react';
  * @returns {JSX.Element} The rendered ToolbarView component, which includes the toolbar group selector and the items of the selected group.
  */
 export const ToolbarView: React.FC = () => {
-  const [selectedGroup, setSelectedGroup] = useState<string>('download');
+  const [selectedGroup, setSelectedGroup] = useState<string>('automatic');
 
   const ToolbarGroups: ToolbarGroupsSelectorItemProps[] = [
+    {
+      id: 'automatic',
+      label: 'Automatic',
+      onClick: () => setSelectedGroup('automatic'),
+    },
     {
       id: 'download',
       label: 'Download',
@@ -67,6 +74,7 @@ export const ToolbarView: React.FC = () => {
   // Combine the params groups into a dictionary for easy access
   const ToolbarGroupsParams: Record<string, React.ReactNode> = useMemo(
     () => ({
+      automatic: <AutomaticGroupParams />,
       download: <DownloadGroupParams />,
       merge: <MergeGroupParams />,
       apply: <ApplyGroupParams />,
@@ -79,13 +87,14 @@ export const ToolbarView: React.FC = () => {
   // Combine the button groups into a dictionary for easy access
   const ToolbarGroupsButtons: Record<string, React.ReactNode> = useMemo(
     () => ({
+      automatic: <AutomaticGroupButtons />,
       download: <DownloadGroupButtons />,
       merge: <MergeGroupButtons />,
       apply: <ApplyGroupButtons />,
       // TODO: Uncomment once aligning is implemented
       // align: <AlignGroupButtons />,
     }),
-    [DownloadGroupButtons, MergeGroupButtons, ApplyGroupButtons]
+    [DownloadGroupButtons, MergeGroupButtons, ApplyGroupButtons, AutomaticGroupButtons]
   );
 
   return (
