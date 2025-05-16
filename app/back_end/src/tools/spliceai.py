@@ -93,7 +93,7 @@ def write_vcf(dataframe:pd.DataFrame, output_filename:str)-> str:
     )
     with open(output_filename, 'w') as f:
         f.write(header)
-        variant_columns = ["hg38_gnomad_format", "variant_id_gnomad", "variant_id", "hg38_ID_clinvar"]
+        variant_columns = ["gen_pos"]
         for row in dataframe.itertuples(index=False):
             variant_value = next(
                 (getattr(row, col) for col in variant_columns if hasattr(row, col) 
@@ -235,24 +235,6 @@ def is_valid_number(value):
             return False
     
 
-def get_variant_value(row:pd.Series):
-    """
-    Extracts the variant value from a given row by checking multiple specified columns.
-
-    This function iterates over a list of predefined columns and returns the first non-null,
-    non-"?" value found in the row. If no valid value is found in any of the columns, it returns None.
-    Args:
-        row (pandas.Series): A row from the DataFrame containing variant information.
-    Returns:
-       str or None: The first valid variant value found in the row, or None if no valid value exists.
-    
-    """
-    for col in ["hg38_gnomad_format", "variant_id_gnomad", "variant_id", "hg38_ID_clinvar"]:
-        if col in row and pd.notna(row[col]) and row[col] != "?":
-            return row[col]
-    return None
-
-
 def merge_spliceai_scores(data:pd.DataFrame,spliceai_scores:dict)-> pd.DataFrame:
     """
     Merges SpliceAI scores into a given DataFrame based on variant values.
@@ -269,15 +251,13 @@ def merge_spliceai_scores(data:pd.DataFrame,spliceai_scores:dict)-> pd.DataFrame
     """
     try:
         updated_data = data.copy()
-        updated_data['variant_value'] = updated_data.apply(get_variant_value, axis=1)
-        spliceai_map = updated_data['variant_value'].map(spliceai_scores)
+        spliceai_map = updated_data['gen_pos'].map(spliceai_scores)
         for key in ["Delta score (acceptor gain)", "Delta score (acceptor loss)", 
                     "Delta score (donor gain)", "Delta score (donor loss)", 
                     "Delta position (acceptor gain)", "Delta position (acceptor loss)", 
                     "Delta position (donor gain)", "Delta position (donor loss)", 
                     "Max_Delta_Score"]:
             updated_data.loc[:, f"{key}_spliceai"] = spliceai_map.apply(lambda x: x.get(key, None) if isinstance(x, dict) else None)
-        updated_data.drop(columns=['variant_value'], inplace=True)
         updated_data = updated_data.convert_dtypes()
         return updated_data
     except Exception as e:

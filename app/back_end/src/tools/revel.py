@@ -23,11 +23,8 @@ def assign_revel_scores(input_gene_data: pd.DataFrame, revel_db_file: str) -> pd
     with tqdm(total = total_rows, desc = "Assigning REVEL scores", unit = "Rows", unit_scale = True) as pbar:
         for i in range(total_rows):
             pbar.update(1)
-            hg38_gnomad_format = input_gene_data.loc[i, 'hg38_gnomad_format']
-                
-            if pd.isna(hg38_gnomad_format):
-                hg38_gnomad_format = input_gene_data.loc[i, 'variant_id_gnomad']
-                
+            hg38_gnomad_format = input_gene_data.loc[i, 'gen_pos']
+                  
             try:
                 chromosome, position, ref, alt = hg38_gnomad_format.split('-')
                 revel_score = get_single_revel_score(chromosome, position, ref, alt, revel_db_file)
