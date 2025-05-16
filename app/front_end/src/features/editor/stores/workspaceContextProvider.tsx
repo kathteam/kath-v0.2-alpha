@@ -1,5 +1,6 @@
 import { ConsoleFeedback, FileContentModel, FileModel, FilePaginationModel, FileTypes } from '@/features/editor/types';
 import { getWorkspaceArray } from '@/features/editor/utils';
+import { getFileTypeFromExtension } from '@/features/editor/utils/helpers';
 import { useSessionContext, useStatusContext } from '@/hooks';
 import { axios, socket } from '@/lib';
 import { Endpoints, Events } from '@/types';
@@ -27,6 +28,9 @@ export interface WorkspaceContextProps {
   consoleFeedback: ConsoleFeedback[];
   consoleFeedbackReset: () => void;
   consoleFeedbackStateUpdate: (add: ConsoleFeedback) => void;
+
+  // Functions
+  openFileByPath: (filePath: string) => void;
 }
 
 export const WorkspaceContext = createContext<WorkspaceContextProps>({
@@ -50,6 +54,9 @@ export const WorkspaceContext = createContext<WorkspaceContextProps>({
   consoleFeedback: [],
   consoleFeedbackReset: () => {},
   consoleFeedbackStateUpdate: () => {},
+
+  // Functions
+  openFileByPath: () => {},
 });
 
 interface Props {
@@ -205,14 +212,24 @@ export const WorkspaceContextProvider: React.FC<Props> = ({ children }) => {
 
   // Console feedback state
   const [consoleFeedback, setConsoleFeedback] = useState<ConsoleFeedback[]>([]);
-  
+
   const consoleFeedbackReset = () => {
     setConsoleFeedback([]);
   };
 
   const consoleFeedbackStateUpdate = (add: ConsoleFeedback) => {
     setConsoleFeedback((prev) => [...prev, add]);
-  }
+  };
+
+  // Function for opening a file by its path
+  const openFileByPath = (filePath: string) => {
+    const fileId = filePath;
+    const fileLabel = filePath.split('/').pop() || filePath;
+    const fileType = getFileTypeFromExtension(filePath.split('.').pop() || '');
+
+    fileStateUpdate({ id: fileId, label: fileLabel, type: fileType }, undefined, undefined);
+    filesHistoryStateUpdate({ id: fileId, label: fileLabel, type: fileType });
+  };
 
   const WorkspaceContextValue: WorkspaceContextProps = {
     file,
@@ -231,6 +248,8 @@ export const WorkspaceContextProvider: React.FC<Props> = ({ children }) => {
     consoleFeedback,
     consoleFeedbackReset,
     consoleFeedbackStateUpdate,
+
+    openFileByPath,
   };
 
   return <WorkspaceContext.Provider value={WorkspaceContextValue}>{children}</WorkspaceContext.Provider>;
