@@ -2,6 +2,8 @@ export { AlignGroupParams } from './alignGroupParams';
 export type { AlignGroupParamsProps } from './alignGroupParams';
 export { ApplyGroupParams } from './applyGroupParams';
 export type { ApplyGroupParamsProps } from './applyGroupParams';
+export { AutomaticGroupParams } from './automaticGroupParams';
+export type { AutomaticGroupParamsProps } from './automaticGroupParams';
 export { DownloadGroupParams } from './downloadGroupParams';
 export type { DownloadGroupParamsProps } from './downloadGroupParams';
 export { GroupParamsInputLabel } from './groupParamsComponents/groupParamsInputLabel';
