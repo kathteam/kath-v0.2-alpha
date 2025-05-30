@@ -1,16 +1,15 @@
-import { Autocomplete, TextField } from "@mui/material";
 import {
   GroupParamsTypography,
   StyledGroupParamsMenuItemTypography,
   StyledGroupParamsMenuItemTypographyBold,
 } from '@/features/editor/components/toolbarView/toolbarGroupParams';
 import { useToolbarContext, useWorkspaceContext } from '@/features/editor/hooks';
+import { defaultSaveTo } from '@/features/editor/stores';
 import { FileModel, FileTypes } from '@/features/editor/types';
 import { getWorkspaceArray } from '@/features/editor/utils';
 import { useStatusContext } from '@/hooks';
-import { Box, Checkbox, FormControlLabel } from '@mui/material';
+import { Autocomplete, Box, Checkbox, FormControlLabel, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { defaultSaveTo } from "@/features/editor/stores";
 
 export interface MergeGroupParamsProps {}
 
@@ -35,6 +34,8 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
     clinvarErrorStateUpdate,
     gnomadErrorStateUpdate,
     customErrorStateUpdate,
+    openAfterSave,
+    openAfterSaveStateUpdate,
   } = useToolbarContext();
 
   //
@@ -89,6 +90,14 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
   };
 
   //
+  // Open After Save state
+  //
+
+  const handleOpenAfterSaveChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    openAfterSaveStateUpdate(event.target.checked);
+  };
+
+  //
   // Effects
   //
   useEffect(() => {
@@ -96,10 +105,10 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
   }, [fileTree]);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', columnGap: '1rem', p: '1rem'}}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '1rem', width: '50%'}}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', columnGap: '1rem', p: '1rem' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '1rem', width: '50%' }}>
         <Autocomplete
-          size="small"
+          size='small'
           sx={(theme) => ({
             '& fieldset': {
               borderColor: theme.palette.text.primary,
@@ -108,21 +117,14 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
           })}
           value={lovdFileState}
           onChange={(_event, value) => {
-            if (value)
-              handleLovdFileChange(value)
+            if (value) handleLovdFileChange(value);
           }}
           disabled={blocked}
           options={fileArray.filter((file) => file.type !== FileTypes.FOLDER)}
           groupBy={(option) => option.parent?.id || 'root'}
           getOptionLabel={(option) => option.label}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          renderInput={(params) => 
-            <TextField
-              {...params}
-              label="Lovd File"
-              error={Boolean(lovdError)}
-            />
-          }
+          renderInput={(params) => <TextField {...params} label='Lovd File' error={Boolean(lovdError)} />}
           renderGroup={(params) => (
             <li key={params.key}>
               <Box sx={{ px: '0.5rem' }}>
@@ -133,7 +135,7 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
           )}
         />
         <Autocomplete
-          size="small"
+          size='small'
           sx={(theme) => ({
             '& fieldset': {
               borderColor: theme.palette.text.primary,
@@ -142,21 +144,14 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
           })}
           value={clinvarFileState}
           onChange={(_event, value) => {
-            if (value)
-              handleClinvarFileChange(value)
+            if (value) handleClinvarFileChange(value);
           }}
           disabled={blocked}
           options={fileArray.filter((file) => file.type !== FileTypes.FOLDER)}
           groupBy={(option) => option.parent?.id || 'root'}
           getOptionLabel={(option) => option.label}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          renderInput={(params) => 
-            <TextField
-              {...params}
-              label="Clinvar File"
-              error={Boolean(clinvarError)}
-            />
-          }
+          renderInput={(params) => <TextField {...params} label='Clinvar File' error={Boolean(clinvarError)} />}
           renderGroup={(params) => (
             <li key={params.key}>
               <Box sx={{ px: '0.5rem' }}>
@@ -167,7 +162,7 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
           )}
         />
         <Autocomplete
-          size="small"
+          size='small'
           sx={(theme) => ({
             '& fieldset': {
               borderColor: theme.palette.text.primary,
@@ -176,21 +171,14 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
           })}
           value={gnomadFileState}
           onChange={(_event, value) => {
-            if (value)
-              handleGnomadFileChange(value)
+            if (value) handleGnomadFileChange(value);
           }}
           disabled={blocked}
           options={fileArray.filter((file) => file.type !== FileTypes.FOLDER)}
           groupBy={(option) => option.parent?.id || 'root'}
           getOptionLabel={(option) => option.label}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          renderInput={(params) => 
-            <TextField
-              {...params}
-              label="Gnomad File"
-              error={Boolean(gnomadError)}
-            />
-          }
+          renderInput={(params) => <TextField {...params} label='Gnomad File' error={Boolean(gnomadError)} />}
           renderGroup={(params) => (
             <li key={params.key}>
               <Box sx={{ px: '0.5rem' }}>
@@ -201,10 +189,10 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
           )}
         />
       </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '1rem', width: '50%', flexGrow: '1'}}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '0.25rem'}}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '1rem', width: '50%', flexGrow: '1' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '0.25rem' }}>
           <Autocomplete
-            size="small"
+            size='small'
             sx={(theme) => ({
               '& fieldset': {
                 borderColor: theme.palette.text.primary,
@@ -213,22 +201,16 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
             })}
             value={saveToState}
             onChange={(_event, value) => {
-              if (value)
-                handleSaveToChange(value)
+              if (value) handleSaveToChange(value);
             }}
             disabled={blocked}
             options={[defaultSaveTo, ...fileArray.filter((file) => file.type !== FileTypes.FOLDER)]}
             groupBy={(option) => option.parent?.id || 'root'}
             getOptionLabel={(option) => option.label}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            renderInput={(params) => 
-              <TextField
-                {...params}
-                label="Save To"
-                error={Boolean(saveToError)}
-                helperText={saveToError}
-              />
-            }
+            renderInput={(params) => (
+              <TextField {...params} label='Save To' error={Boolean(saveToError)} helperText={saveToError} />
+            )}
             renderGroup={(params) => (
               <li key={params.key}>
                 <Box sx={{ px: '0.5rem' }}>
@@ -252,9 +234,21 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
               labelPlacement='start'
             />
           )}
+          <FormControlLabel
+            control={
+              <Checkbox
+                id='override-checkbox'
+                checked={openAfterSave}
+                onChange={handleOpenAfterSaveChange}
+                disabled={blocked}
+              />
+            }
+            label={<GroupParamsTypography label={'Open after save'} />}
+            labelPlacement='start'
+          />
         </Box>
         <Autocomplete
-          size="small"
+          size='small'
           sx={(theme) => ({
             '& fieldset': {
               borderColor: theme.palette.text.primary,
@@ -263,21 +257,14 @@ export const MergeGroupParams: React.FC<MergeGroupParamsProps> = () => {
           })}
           value={customFileState}
           onChange={(_event, value) => {
-            if (value)
-              handleCustomFileChange(value)
+            if (value) handleCustomFileChange(value);
           }}
           disabled={blocked}
           options={fileArray.filter((file) => file.type !== FileTypes.FOLDER)}
           groupBy={(option) => option.parent?.id || 'root'}
           getOptionLabel={(option) => option.label}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          renderInput={(params) => 
-            <TextField
-              {...params}
-              label="Custom File"
-              error={Boolean(customError)}
-            />
-          }
+          renderInput={(params) => <TextField {...params} label='Custom File' error={Boolean(customError)} />}
           renderGroup={(params) => (
             <li key={params.key}>
               <Box sx={{ px: '0.5rem' }}>

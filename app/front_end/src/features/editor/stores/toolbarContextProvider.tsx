@@ -12,6 +12,9 @@ export interface ToolbarContextProps {
   saveToError: string;
   saveToErrorStateUpdate: (saveToFileError: string) => void;
 
+  openAfterSave: boolean;
+  openAfterSaveStateUpdate: (openAfterSave: boolean) => void;
+
   //
   // Download state properties
   //
@@ -25,7 +28,12 @@ export interface ToolbarContextProps {
   clinvarFile: FileModel | null;
   gnomadFile: FileModel | null;
   customFile: FileModel | null;
-  mergeStateUpdate: (lovdFile?: FileModel, clinvarFile?: FileModel, gnomadFile?: FileModel, customFile?: FileModel) => void;
+  mergeStateUpdate: (
+    lovdFile?: FileModel,
+    clinvarFile?: FileModel,
+    gnomadFile?: FileModel,
+    customFile?: FileModel
+  ) => void;
 
   lovdError: string;
   lovdErrorStateUpdate: (lovdFileError: string) => void;
@@ -70,6 +78,9 @@ export const ToolbarContext = createContext<ToolbarContextProps>({
 
   saveToError: '',
   saveToErrorStateUpdate: () => {},
+
+  openAfterSave: true,
+  openAfterSaveStateUpdate: () => {},
 
   //
   // Download state defaults
@@ -131,6 +142,7 @@ export const ToolbarContextProvider: React.FC<Props> = ({ children }) => {
   //
   const [saveTo, setSaveTo] = useState<FileModel>(defaultSaveTo);
   const [override, setOverride] = useState<boolean>(false);
+  const [openAfterSave, setOpenAfterSave] = useState<boolean>(true);
 
   const saveToStateUpdate = (saveTo: FileModel, override?: boolean) => {
     setSaveTo(saveTo);
@@ -141,6 +153,11 @@ export const ToolbarContextProvider: React.FC<Props> = ({ children }) => {
 
   const saveToErrorStateUpdate = (saveToFileError: string) => {
     setSaveToError(saveToFileError);
+  };
+
+  const openAfterSaveStateUpdate = (openAfterSave: boolean) => {
+    console.log('Open after save state updated:', openAfterSave);
+    setOpenAfterSave(openAfterSave);
   };
 
   //
@@ -160,7 +177,12 @@ export const ToolbarContextProvider: React.FC<Props> = ({ children }) => {
   const [gnomadFile, setGnomadFile] = useState<FileModel | null>(null);
   const [customFile, setCustomFile] = useState<FileModel | null>(null);
 
-  const mergeStateUpdate = (lovdFile?: FileModel, clinvarFile?: FileModel, gnomadFile?: FileModel, customFile?: FileModel) => {
+  const mergeStateUpdate = (
+    lovdFile?: FileModel,
+    clinvarFile?: FileModel,
+    gnomadFile?: FileModel,
+    customFile?: FileModel
+  ) => {
     if (lovdFile) setLovdFile(lovdFile);
     if (clinvarFile) setClinvarFile(clinvarFile);
     if (gnomadFile) setGnomadFile(gnomadFile);
@@ -239,6 +261,9 @@ export const ToolbarContextProvider: React.FC<Props> = ({ children }) => {
 
     saveToError,
     saveToErrorStateUpdate,
+
+    openAfterSave,
+    openAfterSaveStateUpdate,
 
     //
     // Download state

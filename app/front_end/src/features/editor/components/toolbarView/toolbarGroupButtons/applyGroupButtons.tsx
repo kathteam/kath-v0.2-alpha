@@ -12,8 +12,9 @@ export interface ApplyGroupButtonsProps {}
 
 export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
   const { blockedStateUpdate } = useStatusContext();
-  const { fileTree } = useWorkspaceContext();
-  const { saveTo, saveToErrorStateUpdate, override, applyTo, applyErrorStateUpdate } = useToolbarContext();
+  const { fileTree, openFileByPath } = useWorkspaceContext();
+  const { saveTo, saveToErrorStateUpdate, override, applyTo, applyErrorStateUpdate, openAfterSave } =
+    useToolbarContext();
 
   const applySpliceAiClick = useCallback(async () => {
     if (!applyTo) {
@@ -38,12 +39,15 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
           applyTo: applyTo.id,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error applying SpliceAI:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo]);
+  }, [saveTo, override, applyTo, openAfterSave]);
 
   const applyCaddClick = useCallback(async () => {
     if (!applyTo) {
@@ -68,12 +72,15 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
           applyTo: applyTo.id,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error applying CADD:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo]);
+  }, [saveTo, override, applyTo, openAfterSave]);
 
   const applyRevelClick = useCallback(async () => {
     if (!applyTo) {
@@ -98,12 +105,15 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
           applyTo: applyTo.id,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error applying REVEL:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo]);
+  }, [saveTo, override, applyTo, openAfterSave]);
 
   const applyAllClick = useCallback(async () => {
     if (!applyTo) {
@@ -128,12 +138,15 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
           applyTo: applyTo.id,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error applying ALL:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo]);
+  }, [saveTo, override, applyTo, openAfterSave]);
 
   const buttons: ToolbarGroupItemProps[] = useMemo(
     () => [
