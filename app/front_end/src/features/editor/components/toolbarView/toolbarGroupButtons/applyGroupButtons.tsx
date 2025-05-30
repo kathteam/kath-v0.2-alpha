@@ -39,12 +39,15 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
           applyTo: applyTo.id,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error applying SpliceAI:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo]);
+  }, [saveTo, override, applyTo, openAfterSave]);
 
   const applyCaddClick = useCallback(async () => {
     if (!applyTo) {
@@ -69,12 +72,15 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
           applyTo: applyTo.id,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error applying CADD:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo]);
+  }, [saveTo, override, applyTo, openAfterSave]);
 
   const applyRevelClick = useCallback(async () => {
     if (!applyTo) {
@@ -99,12 +105,15 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
           applyTo: applyTo.id,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error applying REVEL:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo]);
+  }, [saveTo, override, applyTo, openAfterSave]);
 
   const applyAllClick = useCallback(async () => {
     saveToStateUpdate(defaultSaveTo);
