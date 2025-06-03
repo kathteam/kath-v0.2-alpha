@@ -1,0 +1,30 @@
+FROM nikolaik/python-nodejs:python3.12-nodejs23-slim
+
+# Downloading hg19ToHg38.over.chain.gz file needed for pyliftover into it's cache directory
+ADD --chmod=644 "http://hgdownload2.cse.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz" /root/.pyliftover/
+# Downloading hg38.fa.gz file needed for SpliceAI
+ADD --chmod=644 "https://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz" /
+
+# Setup Mozilla APT repository for Firefox
+ADD --chmod=644 https://packages.mozilla.org/apt/repo-signing-key.gpg /etc/apt/keyrings/packages.mozilla.org.asc
+RUN echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" > /etc/apt/sources.list.d/mozilla.list && \
+    echo "Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n\nPackage: firefox*\nPin: release o=Ubuntu\nPin-Priority: -1" > /etc/apt/preferences.d/mozilla
+
+RUN apt-get update && \
+    apt-get install curl redis-server firefox unzip -y --no-install-recommends
+
+RUN gunzip -c hg38.fa.gz > hg38.fa && \
+    rm hg38.fa.gz
+
+# Downloading revel-v1.3_all_chromosomes.zip file needed for REVEL (Can't do it with ADD because of 403 error)
+RUN curl -O "https://rothsj06.dmz.hpc.mssm.edu/revel-v1.3_all_chromosomes.zip"
+
+COPY ./back_end/src/scripts/revel.py /revel.py
+
+RUN unzip /revel-v1.3_all_chromosomes.zip && \
+    pip install --no-cache-dir --root-user-action ignore -t /delete tqdm && \
+    PYTHONPATH=/delete python3 /revel.py /revel_with_transcript_ids /revel_with_transcript_ids.db && \
+    rm -rf /revel-v1.3_all_chromosomes.zip /revel_with_transcript_ids /delete
+
+RUN apt-get --purge autoremove curl unzip -y && \
+    rm -rf /var/lib/apt/lists/*
