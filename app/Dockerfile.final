@@ -1,0 +1,23 @@
+FROM cpu64/kath:base
+
+ARG APP_DIR="/kath/app"
+
+WORKDIR ${APP_DIR}
+
+COPY ./back_end/requirements.txt .
+RUN MAKEFLAGS="-j$(nproc)" pip install --no-cache-dir --break-system-packages --root-user-action ignore -r ./requirements.txt
+
+COPY ./front_end/package.json .
+RUN npm install && mv ./node_modules /
+
+RUN mkdir -p ${APP_DIR}/back_end/src/workspace/fasta/ && \
+    ln -f /hg38.fa ${APP_DIR}/back_end/src/workspace/fasta/hg38.fa && \
+    mkdir -p ${APP_DIR}/back_end/src/workspace/revel/ && \
+    ln -f /revel_with_transcript_ids.db ${APP_DIR}/back_end/src/workspace/revel/revel_with_transcript_ids.db
+
+COPY . .
+
+EXPOSE 5173
+EXPOSE 8080
+
+ENTRYPOINT ["./run.sh"]
