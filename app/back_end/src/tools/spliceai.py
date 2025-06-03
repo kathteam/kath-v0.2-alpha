@@ -2,7 +2,7 @@
 SpliceAI Integration Module
 
 This module provides functionality to integrate SpliceAI predictions into a genomic variant dataset.
-It includes utilities for parsing variant data, generating VCF files, running SpliceAI, and merging 
+It includes utilities for parsing variant data, generating VCF files, running SpliceAI, and merging
 predicted splicing effects into a Pandas DataFrame.
 
 Main Features:
@@ -56,14 +56,14 @@ def parse_variant(variant_str):
     """
     try:
         chrom, pos, ref, alt = variant_str.split("-")
-        
+
         if not chrom or not pos or not ref or not alt:
             return None
-        
+
         return chrom, pos, ref, alt
     except Exception:
         return None
-       
+
 
 
 def write_vcf(dataframe:pd.DataFrame, output_filename:str)-> str:
@@ -73,7 +73,7 @@ def write_vcf(dataframe:pd.DataFrame, output_filename:str)-> str:
 
     This function extracts specific variant information
     from a pandas DataFrame and writes it to a VCF file.
-    For each row, the function extracts the first valid variant value 
+    For each row, the function extracts the first valid variant value
     found in these columns, parses it, and writes the corresponding VCF line.
 
     Args:
@@ -96,8 +96,8 @@ def write_vcf(dataframe:pd.DataFrame, output_filename:str)-> str:
         variant_columns = ["gen_pos"]
         for row in dataframe.itertuples(index=False):
             variant_value = next(
-                (getattr(row, col) for col in variant_columns if hasattr(row, col) 
-                 and pd.notna(getattr(row, col)) and getattr(row, col) != "?"), 
+                (getattr(row, col) for col in variant_columns if hasattr(row, col)
+                 and pd.notna(getattr(row, col)) and getattr(row, col) != "?"),
                 None
             )
             if variant_value:
@@ -106,7 +106,7 @@ def write_vcf(dataframe:pd.DataFrame, output_filename:str)-> str:
                     chrom, pos, ref, alt = parsed_variant
                     f.write(f"{chrom}\t{pos}\t.\t{ref}\t{alt}\t.\t.\t.\n")
     return output_filename
-    
+
 
 
 def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, annotation="grch38"):
@@ -124,10 +124,10 @@ def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, annotation="grch38"
     -A: Gene annotation file(grch37 or grch38)
     Optional parameters:
     !! Only for Nvidia graphics videocard
-    -B: Number of predictions to collect before running models on 
+    -B: Number of predictions to collect before running models on
     them in batch. (default: 1 (don't batch))
-    When setting the batching parameters, be mindful of the 
-    system and gpu memory of the machine you are running the script on. 
+    When setting the batching parameters, be mindful of the
+    system and gpu memory of the machine you are running the script on.
     Feel free to experiment, but some reasonable -T numbers would be 64/128,
       increasing -B might further improve performance.
     Args:
@@ -135,7 +135,7 @@ def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, annotation="grch38"
         ouput_vcf (str): Path to the ouput VCF file.
         fasta (str): Path to the reference genome file in FASTA format.
         annotation (str): Annotation type (default is "grch38").
-        
+
     Returns:
         str: Path to the output VCF file created.
 
@@ -144,7 +144,7 @@ def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, annotation="grch38"
     """
     if not os.path.isfile(fasta):
         raise SpliceAIError(f"FASTA file not found: {fasta}")
-    
+
     spliceai_command = [
         "spliceai",
         "-I", input_vcf,
@@ -152,7 +152,7 @@ def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, annotation="grch38"
         "-R", fasta,
         "-A", annotation,
         "-D", "500",
-        "-B", '32',
+        # "-B", '32',
     ]
     try:
         result = subprocess.run(spliceai_command, capture_output=True, text=True, check=True)
@@ -166,13 +166,13 @@ def parse_spliceai_vcf(vcf_file: str)->dict:
     """
     Parses a VCF file to extract SpliceAI scores and maps them to genomic variants.
 
-    This function reads a VCF file, extracts SpliceAI scores from the INFO field, 
-    and stores them in a dictionary using a variant key format: "chromosome-position-ref-alt". 
+    This function reads a VCF file, extracts SpliceAI scores from the INFO field,
+    and stores them in a dictionary using a variant key format: "chromosome-position-ref-alt".
     The extracted scores include delta scores for acceptor/donor gain/loss and their positions.
     Args:
        vcf_file(str): Path to the VCF file containing SpliceAI annotations.
     Returns:
-        dict: A dictionary where keys are variant identifiers (e.g., "chr-pos-ref-alt") 
+        dict: A dictionary where keys are variant identifiers (e.g., "chr-pos-ref-alt")
         and values are dictionaries of SpliceAI scores.
     Raises:
         ValueError:If the VCF file is not found or an error occurs during parsing.
@@ -202,7 +202,7 @@ def parse_spliceai_vcf(vcf_file: str)->dict:
                                 "Delta position (acceptor loss)": int(columns[1]) + int(spliceai_values[7]),
                                 "Delta position (donor gain)": int(columns[1]) + int(spliceai_values[8]),
                                 "Delta position (donor loss)": int(columns[1]) + int(spliceai_values[9]),
-                                "Max_Delta_Score": max(float(spliceai_values[2]), float(spliceai_values[3]), 
+                                "Max_Delta_Score": max(float(spliceai_values[2]), float(spliceai_values[3]),
                                                         float(spliceai_values[4]), float(spliceai_values[5]))
                             }
                         else:
@@ -229,17 +229,17 @@ def parse_spliceai_vcf(vcf_file: str)->dict:
 def is_valid_number(value):
         """Returns True if the value can be converted to an int or float, else False."""
         try:
-            float(value) 
+            float(value)
             return True
         except ValueError:
             return False
-    
+
 
 def merge_spliceai_scores(data:pd.DataFrame,spliceai_scores:dict)-> pd.DataFrame:
     """
     Merges SpliceAI scores into a given DataFrame based on variant values.
 
-    This function extracts variant values from the input DataFrame, maps them to corresponding 
+    This function extracts variant values from the input DataFrame, maps them to corresponding
     SpliceAI scores from the provided dictionary, and adds the SpliceAI score columns to the DataFrame.
     Args:
         data(pd.DataFrame): Input DataFrame containing variant information.
@@ -252,10 +252,10 @@ def merge_spliceai_scores(data:pd.DataFrame,spliceai_scores:dict)-> pd.DataFrame
     try:
         updated_data = data.copy()
         spliceai_map = updated_data['gen_pos'].map(spliceai_scores)
-        for key in ["Delta score (acceptor gain)", "Delta score (acceptor loss)", 
-                    "Delta score (donor gain)", "Delta score (donor loss)", 
-                    "Delta position (acceptor gain)", "Delta position (acceptor loss)", 
-                    "Delta position (donor gain)", "Delta position (donor loss)", 
+        for key in ["Delta score (acceptor gain)", "Delta score (acceptor loss)",
+                    "Delta score (donor gain)", "Delta score (donor loss)",
+                    "Delta position (acceptor gain)", "Delta position (acceptor loss)",
+                    "Delta position (donor gain)", "Delta position (donor loss)",
                     "Max_Delta_Score"]:
             updated_data.loc[:, f"{key}_spliceai"] = spliceai_map.apply(lambda x: x.get(key, None) if isinstance(x, dict) else None)
         updated_data = updated_data.convert_dtypes()
