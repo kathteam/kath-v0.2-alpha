@@ -12,8 +12,17 @@ export interface ApplyGroupButtonsProps {}
 
 export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
   const { blockedStateUpdate } = useStatusContext();
-  const { fileTree } = useWorkspaceContext();
-  const { saveTo, saveToErrorStateUpdate, override, applyTo, applyErrorStateUpdate, saveToStateUpdate, openAfterSave } = useToolbarContext();
+  const { fileTree, openFileByPath } = useWorkspaceContext();
+  const {
+    saveTo,
+    saveToErrorStateUpdate,
+    override,
+    applyTo,
+    applyErrorStateUpdate,
+    saveToStateUpdate,
+    openAfterSave,
+    gene,
+  } = useToolbarContext();
 
   const applySpliceAiClick = useCallback(async () => {
     if (!applyTo) {
@@ -112,17 +121,15 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo, openAfterSave]);
+  }, [fileTree, saveTo, override, applyTo, openAfterSave]);
 
   const applyAllClick = useCallback(async () => {
-    saveToStateUpdate(defaultSaveTo);
     await applySpliceAiClick();
     await new Promise((resolve) => setTimeout(resolve, 500));
     await applyCaddClick();
     await new Promise((resolve) => setTimeout(resolve, 500));
     await applyRevelClick();
-  }, []);
-
+  }, [applySpliceAiClick, applyCaddClick, applyRevelClick, gene]);
 
   const buttons: ToolbarGroupItemProps[] = useMemo(
     () => [
