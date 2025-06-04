@@ -13,7 +13,8 @@ export interface ApplyGroupButtonsProps {}
 export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
   const { blockedStateUpdate } = useStatusContext();
   const { fileTree } = useWorkspaceContext();
-  const { saveTo, saveToErrorStateUpdate, override, applyTo, applyErrorStateUpdate } = useToolbarContext();
+  const { saveTo, saveToErrorStateUpdate, override, applyTo, applyErrorStateUpdate, saveToStateUpdate } =
+    useToolbarContext();
 
   const applySpliceAiClick = useCallback(async () => {
     if (!applyTo) {
@@ -106,34 +107,13 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
   }, [saveTo, override, applyTo]);
 
   const applyAllClick = useCallback(async () => {
-    if (!applyTo) {
-      applyErrorStateUpdate('Please select a file');
-      return;
-    }
-
-    blockedStateUpdate(true);
-
-    try {
-      const timestamp = generateTimestamp();
-      const savePath =
-        saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `apply_all_${timestamp}.csv`);
-      if (getFileExtension(savePath) !== 'csv') {
-        saveToErrorStateUpdate('Select .csv');
-        return;
-      }
-
-      await axios.get(`${Endpoints.WORKSPACE_APPLY}/all/${savePath}`, {
-        params: {
-          override,
-          applyTo: applyTo.id,
-        },
-      });
-    } catch (error) {
-      console.error('Error applying ALL:', error);
-    } finally {
-      blockedStateUpdate(false);
-    }
-  }, [saveTo, override, applyTo]);
+    saveToStateUpdate(defaultSaveTo);
+    await applySpliceAiClick();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await applyCaddClick();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await applyRevelClick();
+  }, []);
 
   const buttons: ToolbarGroupItemProps[] = useMemo(
     () => [
