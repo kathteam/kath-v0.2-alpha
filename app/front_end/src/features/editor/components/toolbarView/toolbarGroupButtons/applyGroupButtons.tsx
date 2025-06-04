@@ -113,10 +113,9 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo, openAfterSave]);
+  }, [fileTree, saveTo, override, applyTo, openAfterSave]);
 
   const applyAllClick = useCallback(async () => {
-    saveToStateUpdate(defaultSaveTo);
     await applySpliceAiClick();
     await new Promise((resolve) => setTimeout(resolve, 500));
     await applyCaddClick();

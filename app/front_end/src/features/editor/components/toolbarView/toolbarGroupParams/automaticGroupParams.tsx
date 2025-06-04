@@ -16,7 +16,16 @@ export interface AutomaticGroupParamsProps {}
 export const AutomaticGroupParams: React.FC<AutomaticGroupParamsProps> = () => {
   const { blocked } = useStatusContext();
   const { fileTree, fileTreeArray } = useWorkspaceContext();
-  const { saveTo, saveToStateUpdate, saveToError, saveToErrorStateUpdate, gene, geneStateUpdate } = useToolbarContext();
+  const {
+    saveTo,
+    saveToStateUpdate,
+    saveToError,
+    saveToErrorStateUpdate,
+    gene,
+    geneStateUpdate,
+    openAfterSave,
+    openAfterSaveStateUpdate,
+  } = useToolbarContext();
 
   //
   // Gene state
@@ -45,6 +54,13 @@ export const AutomaticGroupParams: React.FC<AutomaticGroupParamsProps> = () => {
   const handleOverrideChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setOverrideState(event.target.checked);
     saveToStateUpdate(saveToState, event.target.checked);
+  };
+
+  //
+  // Open After Save state
+  //
+  const handleOpenAfterSaveChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    openAfterSaveStateUpdate(event.target.checked);
   };
 
   //
@@ -127,6 +143,18 @@ export const AutomaticGroupParams: React.FC<AutomaticGroupParamsProps> = () => {
               labelPlacement='start'
             />
           )}
+          <FormControlLabel
+            control={
+              <Checkbox
+                id='override-checkbox'
+                checked={openAfterSave}
+                onChange={handleOpenAfterSaveChange}
+                disabled={blocked}
+              />
+            }
+            label={<GroupParamsTypography label={'Open after save'} />}
+            labelPlacement='start'
+          />
         </Box>
       </Box>
     </Box>

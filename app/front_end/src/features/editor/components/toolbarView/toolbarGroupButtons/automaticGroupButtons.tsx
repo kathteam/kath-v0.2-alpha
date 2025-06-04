@@ -12,17 +12,16 @@ export interface AutomaticGroupButtonsProps {}
 
 export const AutomaticGroupButtons: React.FC<AutomaticGroupButtonsProps> = () => {
   const { blockedStateUpdate } = useStatusContext();
-  const { fileTree } = useWorkspaceContext();
-  const { saveTo, saveToErrorStateUpdate, override, gene } = useToolbarContext();
+  const { fileTree, openFileByPath } = useWorkspaceContext();
+  const { saveTo, saveToErrorStateUpdate, override, gene, openAfterSave } = useToolbarContext();
 
   const handlePerformAllClick = useCallback(async () => {
-    // Last step is Revel, therefore we check for errors for Revel and use the save to path only for Revel file
-    const revelTimestamp = generateTimestamp();
-    const revelSavePath =
-      saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `auto_revel_${revelTimestamp}.csv`);
-    if (getFileExtension(revelSavePath) !== 'csv') {
-      saveToErrorStateUpdate('Select .csv');
-      return;
+    // Last step is Revel, therefore we check for filetype errors for Revel
+    if (saveTo.id !== defaultSaveTo.id) {
+      if (getFileExtension(saveTo.id).toLowerCase() !== 'csv') {
+        saveToErrorStateUpdate('Please select a .csv file');
+        return;
+      }
     }
 
     blockedStateUpdate(true);
@@ -34,7 +33,7 @@ export const AutomaticGroupButtons: React.FC<AutomaticGroupButtonsProps> = () =>
         params: { source: 'lovd', override, gene },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true); // Auto-Refreshing workspace unblocks the UI, need to reblock again
 
       // --- Download ClinVar ---
@@ -43,7 +42,7 @@ export const AutomaticGroupButtons: React.FC<AutomaticGroupButtonsProps> = () =>
         params: { source: 'clinvar', override, gene },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true);
 
       // --- Download gnomAD ---
@@ -52,7 +51,7 @@ export const AutomaticGroupButtons: React.FC<AutomaticGroupButtonsProps> = () =>
         params: { source: 'gnomad', override, gene },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true);
 
       // --- Merge ALL ---
@@ -67,7 +66,7 @@ export const AutomaticGroupButtons: React.FC<AutomaticGroupButtonsProps> = () =>
         },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true);
 
       // --- Apply SpliceAI ---
@@ -79,7 +78,7 @@ export const AutomaticGroupButtons: React.FC<AutomaticGroupButtonsProps> = () =>
         },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true);
 
       // --- Apply CADD ---
@@ -91,16 +90,22 @@ export const AutomaticGroupButtons: React.FC<AutomaticGroupButtonsProps> = () =>
         },
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true);
 
       // --- Apply REVEL ---
+      const revelSavePath =
+        saveTo.id !== defaultSaveTo.id
+          ? saveTo.id
+          : findUniqueFileName(fileTree, `auto_revel_${generateTimestamp()}.csv`);
       await axios.get(`${Endpoints.WORKSPACE_APPLY}/revel/${revelSavePath}`, {
         params: {
           override,
           applyTo: applyCaddFilePath,
         },
       });
+
+      if (openAfterSave) openFileByPath(revelSavePath);
     } catch (error) {
       console.error('Automated task failed:', error);
     } finally {
