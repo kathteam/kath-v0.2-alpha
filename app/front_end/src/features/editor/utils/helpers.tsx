@@ -22,6 +22,17 @@ export const getIconFromFileType = (fileType: FileTypes) => {
   }
 };
 
+export const getFileTypeFromExtension = (extension: string): FileTypes => {
+  switch (extension.toLowerCase()) {
+    case 'csv':
+      return FileTypes.CSV;
+    case 'txt':
+      return FileTypes.TXT;
+    default:
+      return FileTypes.FILE;
+  }
+};
+
 export const doesFileExist = (fileTreeView: TreeViewBaseItem<FileTreeViewItemProps>[], path: string): boolean => {
   for (const item of fileTreeView) {
     const itemIdLowerCase = item.id.toLowerCase();
@@ -67,7 +78,10 @@ export const getFileExtension = (filename: string): string => {
   return dotIndex !== -1 ? filename.substring(dotIndex + 1).toLowerCase() : '';
 };
 
-export const getWorkspaceArray = (fileTreeView: TreeViewBaseItem<FileTreeViewItemProps>[], parent?: TreeViewBaseItem<FileTreeViewItemProps>): FileModel[] => {
+export const getWorkspaceArray = (
+  fileTreeView: TreeViewBaseItem<FileTreeViewItemProps>[],
+  parent?: TreeViewBaseItem<FileTreeViewItemProps>
+): FileModel[] => {
   const workspaceArray: FileModel[] = [];
   fileTreeView.sort((a, b) => {
     if (a.fileType === FileTypes.FOLDER || b.fileType === FileTypes.FOLDER) {
@@ -82,7 +96,12 @@ export const getWorkspaceArray = (fileTreeView: TreeViewBaseItem<FileTreeViewIte
   });
 
   for (const item of fileTreeView) {
-    workspaceArray.push({ id: item.id, label: item.label, type: item.fileType, parent: parent ? { id: parent.id, label: parent.label, type: parent.fileType } : undefined });
+    workspaceArray.push({
+      id: item.id,
+      label: item.label,
+      type: item.fileType,
+      parent: parent ? { id: parent.id, label: parent.label, type: parent.fileType } : undefined,
+    });
     if (item.children && item.children.length !== 0) {
       workspaceArray.push(...getWorkspaceArray(item.children, item));
     }

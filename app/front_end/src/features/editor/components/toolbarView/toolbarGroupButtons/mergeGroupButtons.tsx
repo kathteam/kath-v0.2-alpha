@@ -12,7 +12,7 @@ export interface MergeGroupButtonsProps {}
 
 export const MergeGroupButtons: React.FC<MergeGroupButtonsProps> = () => {
   const { blockedStateUpdate } = useStatusContext();
-  const { fileTree } = useWorkspaceContext();
+  const { fileTree, openFileByPath } = useWorkspaceContext();
   const {
     saveTo,
     saveToErrorStateUpdate,
@@ -24,6 +24,7 @@ export const MergeGroupButtons: React.FC<MergeGroupButtonsProps> = () => {
     lovdErrorStateUpdate,
     clinvarErrorStateUpdate,
     gnomadErrorStateUpdate,
+    openAfterSave,
   } = useToolbarContext();
 
   const mergeAllClick = useCallback(async () => {
@@ -40,27 +41,31 @@ export const MergeGroupButtons: React.FC<MergeGroupButtonsProps> = () => {
 
     try {
       const timestamp = generateTimestamp();
-      const savePath = saveTo !== defaultSaveTo ? saveTo.id : findUniqueFileName(fileTree, `all_merged_${timestamp}.csv`);
+      const savePath =
+        saveTo !== defaultSaveTo ? saveTo.id : findUniqueFileName(fileTree, `all_merged_${timestamp}.csv`);
       if (getFileExtension(savePath) !== 'csv') {
         saveToErrorStateUpdate('Select .csv');
-        return
+        return;
       }
 
       await axios.get(`${Endpoints.WORKSPACE_MERGE}/all/${savePath}`, {
         params: {
           override,
-          "lovdFile": lovdFile.id,
-          "clinvarFile": clinvarFile.id,
-          "gnomadFile": gnomadFile.id,
-          "customFile": customFile?.id || '',
+          lovdFile: lovdFile.id,
+          clinvarFile: clinvarFile.id,
+          gnomadFile: gnomadFile.id,
+          customFile: customFile?.id || '',
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error merging all files:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, lovdFile, gnomadFile, clinvarFile, customFile]);
+  }, [saveTo, override, lovdFile, gnomadFile, clinvarFile, customFile, openAfterSave]);
 
   const mergeLovdAndGnomadClick = useCallback(async () => {
     clinvarErrorStateUpdate('');
@@ -73,25 +78,29 @@ export const MergeGroupButtons: React.FC<MergeGroupButtonsProps> = () => {
 
     try {
       const timestamp = generateTimestamp();
-      const savePath = saveTo !== defaultSaveTo ? saveTo.id : findUniqueFileName(fileTree, `lovd_gnomad_${timestamp}.csv`);
+      const savePath =
+        saveTo !== defaultSaveTo ? saveTo.id : findUniqueFileName(fileTree, `lovd_gnomad_${timestamp}.csv`);
       if (getFileExtension(savePath) !== 'csv') {
         saveToErrorStateUpdate('Select .csv');
-        return
+        return;
       }
 
       await axios.get(`${Endpoints.WORKSPACE_MERGE}/lovd_gnomad/${savePath}`, {
         params: {
           override,
-          "lovdFile": lovdFile.id,
-          "gnomadFile": gnomadFile.id,
+          lovdFile: lovdFile.id,
+          gnomadFile: gnomadFile.id,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error merging LOVD & gnomAD files:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, lovdFile, gnomadFile]);
+  }, [saveTo, override, lovdFile, gnomadFile, openAfterSave]);
 
   const mergeLovdAndClinvarClick = useCallback(async () => {
     gnomadErrorStateUpdate('');
@@ -104,25 +113,29 @@ export const MergeGroupButtons: React.FC<MergeGroupButtonsProps> = () => {
 
     try {
       const timestamp = generateTimestamp();
-      const savePath = saveTo !== defaultSaveTo ? saveTo.id : findUniqueFileName(fileTree, `lovd_clinvar_${timestamp}.csv`);
+      const savePath =
+        saveTo !== defaultSaveTo ? saveTo.id : findUniqueFileName(fileTree, `lovd_clinvar_${timestamp}.csv`);
       if (getFileExtension(savePath) !== 'csv') {
         saveToErrorStateUpdate('Select .csv');
-        return
+        return;
       }
 
       await axios.get(`${Endpoints.WORKSPACE_MERGE}/lovd_clinvar/${savePath}`, {
         params: {
           override,
-          "lovdFile": lovdFile.id,
-          "clinvarFile": clinvarFile.id,
+          lovdFile: lovdFile.id,
+          clinvarFile: clinvarFile.id,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error merging LOVD & ClinVar files:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, lovdFile, clinvarFile]);
+  }, [saveTo, override, lovdFile, clinvarFile, openAfterSave]);
 
   const buttons: ToolbarGroupItemProps[] = useMemo(
     () => [

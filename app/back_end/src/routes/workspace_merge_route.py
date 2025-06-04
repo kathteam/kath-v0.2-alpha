@@ -31,7 +31,8 @@ from ..data.refactoring import (
     clinvar_file_parse,
     merge_gnomad_lovd,
     merge_custom_file,
-    merge_lovd_clinvar, transform_spdi_to_format
+    merge_lovd_clinvar, transform_spdi_to_format,
+    process_genomic_data
 )
 
 workspace_merge_route_bp = Blueprint("workspace_merge_route", __name__)
@@ -141,7 +142,7 @@ def get_workspace_merge_all(relative_path):
         lovd_data = pd.merge(
             lovd_data["Variants_On_Transcripts"],
             variants_on_genome[
-                ["id", "VariantOnGenome/DNA", "VariantOnGenome/DNA/hg38"]
+                ["id", "VariantOnGenome/DNA", "VariantOnGenome/DNA/hg38","VariantOnGenome/ClinicalClassification","VariantOnGenome/ClinicalClassification/Method"]
             ],
             on="id",
             how="left",
@@ -153,6 +154,7 @@ def get_workspace_merge_all(relative_path):
         else:
             final_data = lovd_clinvar_gnomad_data
 
+        final_data = process_genomic_data(final_data).convert_dtypes()
         # Append existing data if we're not overriding
         if not existing_data.empty:
             final_data = pd.concat([existing_data, final_data], ignore_index=True)
@@ -341,7 +343,7 @@ def get_workspace_merge_lovd_gnomad(relative_path):
         lovd_data = pd.merge(
             lovd_data["Variants_On_Transcripts"],
             variants_on_genome[
-                ["id", "VariantOnGenome/DNA", "VariantOnGenome/DNA/hg38"]
+                ["id", "VariantOnGenome/DNA", "VariantOnGenome/DNA/hg38","VariantOnGenome/ClinicalClassification","VariantOnGenome/ClinicalClassification/Method"]
             ],
             on="id",
             how="left",
@@ -535,7 +537,7 @@ def get_workspace_merge_lovd_clinvar(relative_path):
         lovd_data = pd.merge(
             lovd_data["Variants_On_Transcripts"],
             variants_on_genome[
-                ["id", "VariantOnGenome/DNA", "VariantOnGenome/DNA/hg38"]
+                ["id", "VariantOnGenome/DNA", "VariantOnGenome/DNA/hg38","VariantOnGenome/ClinicalClassification","VariantOnGenome/ClinicalClassification/Method"]
             ],
             on="id",
             how="left",
