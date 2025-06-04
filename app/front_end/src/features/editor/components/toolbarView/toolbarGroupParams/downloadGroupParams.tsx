@@ -1,23 +1,31 @@
-import { Autocomplete, TextField } from "@mui/material";
 import {
   GroupParamsTypography,
   StyledGroupParamsMenuItemTypography,
   StyledGroupParamsMenuItemTypographyBold,
 } from '@/features/editor/components/toolbarView/toolbarGroupParams';
 import { useToolbarContext, useWorkspaceContext } from '@/features/editor/hooks';
+import { defaultSaveTo } from '@/features/editor/stores';
 import { FileModel, FileTypes, GenesEnum, GenesEnumArray } from '@/features/editor/types';
 import { getWorkspaceArray } from '@/features/editor/utils';
 import { useStatusContext } from '@/hooks';
-import { Box, Checkbox, FormControlLabel } from '@mui/material';
+import { Autocomplete, Box, Checkbox, FormControlLabel, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { defaultSaveTo } from "@/features/editor/stores";
 
 export interface DownloadGroupParamsProps {}
 
 export const DownloadGroupParams: React.FC<DownloadGroupParamsProps> = () => {
   const { blocked } = useStatusContext();
   const { fileTree, fileTreeArray } = useWorkspaceContext();
-  const { saveTo, saveToStateUpdate, saveToError, saveToErrorStateUpdate, gene, geneStateUpdate } = useToolbarContext();
+  const {
+    saveTo,
+    saveToStateUpdate,
+    saveToError,
+    saveToErrorStateUpdate,
+    gene,
+    geneStateUpdate,
+    openAfterSave,
+    openAfterSaveStateUpdate,
+  } = useToolbarContext();
 
   //
   // Gene state
@@ -49,6 +57,13 @@ export const DownloadGroupParams: React.FC<DownloadGroupParamsProps> = () => {
   };
 
   //
+  // Open After Save state
+  //
+  const handleOpenAfterSaveChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    openAfterSaveStateUpdate(event.target.checked);
+  };
+
+  //
   // Effects
   //
   useEffect(() => {
@@ -56,10 +71,10 @@ export const DownloadGroupParams: React.FC<DownloadGroupParamsProps> = () => {
   }, [fileTree]);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', columnGap: '1rem', p: '1rem'}}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '1rem', width: '50%'}}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', columnGap: '1rem', p: '1rem' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '1rem', width: '50%' }}>
         <Autocomplete
-          size="small"
+          size='small'
           sx={(theme) => ({
             '& fieldset': {
               borderColor: theme.palette.text.primary,
@@ -68,17 +83,11 @@ export const DownloadGroupParams: React.FC<DownloadGroupParamsProps> = () => {
           })}
           value={geneState}
           onChange={(_event, value) => {
-            if (value)
-              handleGeneChange(value)
+            if (value) handleGeneChange(value);
           }}
           disabled={blocked}
           options={GenesEnumArray}
-          renderInput={(params) => 
-            <TextField
-              {...params}
-              label="Gene"
-            />
-          }
+          renderInput={(params) => <TextField {...params} label='Gene' />}
           renderGroup={(params) => (
             <li key={params.key}>
               <Box sx={{ px: '0.5rem' }}>
@@ -89,10 +98,10 @@ export const DownloadGroupParams: React.FC<DownloadGroupParamsProps> = () => {
           )}
         />
       </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '1rem', width: '50%', flexGrow: '1'}}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '0.25rem'}}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '1rem', width: '50%', flexGrow: '1' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', rowGap: '0.25rem' }}>
           <Autocomplete
-            size="small"
+            size='small'
             sx={(theme) => ({
               '& fieldset': {
                 borderColor: theme.palette.text.primary,
@@ -101,22 +110,16 @@ export const DownloadGroupParams: React.FC<DownloadGroupParamsProps> = () => {
             })}
             value={saveToState}
             onChange={(_event, value) => {
-              if (value)
-                handleSaveToChange(value)
+              if (value) handleSaveToChange(value);
             }}
             disabled={blocked}
             options={[defaultSaveTo, ...fileArray.filter((file) => file.type !== FileTypes.FOLDER)]}
             groupBy={(option) => option.parent?.id || 'root'}
             getOptionLabel={(option) => option.label}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            renderInput={(params) => 
-              <TextField
-                {...params}
-                label="Save To"
-                error={Boolean(saveToError)}
-                helperText={saveToError}
-              />
-            }
+            renderInput={(params) => (
+              <TextField {...params} label='Save To' error={Boolean(saveToError)} helperText={saveToError} />
+            )}
             renderGroup={(params) => (
               <li key={params.key}>
                 <Box sx={{ px: '0.5rem' }}>
@@ -140,6 +143,18 @@ export const DownloadGroupParams: React.FC<DownloadGroupParamsProps> = () => {
               labelPlacement='start'
             />
           )}
+          <FormControlLabel
+            control={
+              <Checkbox
+                id='override-checkbox'
+                checked={openAfterSave}
+                onChange={handleOpenAfterSaveChange}
+                disabled={blocked}
+              />
+            }
+            label={<GroupParamsTypography label={'Open after save'} />}
+            labelPlacement='start'
+          />
         </Box>
       </Box>
     </Box>

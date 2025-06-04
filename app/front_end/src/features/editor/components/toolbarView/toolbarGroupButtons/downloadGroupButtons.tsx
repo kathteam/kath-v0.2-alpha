@@ -13,7 +13,7 @@ export interface DownloadGroupButtonsProps {}
 export const DownloadGroupButtons: React.FC<DownloadGroupButtonsProps> = () => {
   const { blockedStateUpdate } = useStatusContext();
   const { fileTree } = useWorkspaceContext();
-  const { saveTo, saveToStateUpdate, saveToErrorStateUpdate, override, gene } = useToolbarContext();
+  const { saveTo, saveToStateUpdate, saveToErrorStateUpdate, override, gene, openAfterSave } = useToolbarContext();
 
   const handleDownloadAllClick = useCallback(async () => {
     saveToStateUpdate(defaultSaveTo);
@@ -24,6 +24,8 @@ export const DownloadGroupButtons: React.FC<DownloadGroupButtonsProps> = () => {
     await handleDownloadGnomadClick();
   }, [gene]);
 
+  const { openFileByPath } = useWorkspaceContext();
+
   const handleDownloadLovdClick = useCallback(async () => {
     blockedStateUpdate(true);
 
@@ -32,7 +34,7 @@ export const DownloadGroupButtons: React.FC<DownloadGroupButtonsProps> = () => {
       const savePath = saveTo !== defaultSaveTo ? saveTo.id : findUniqueFileName(fileTree, `lovd_${timestamp}.txt`);
       if (getFileExtension(savePath) !== 'txt') {
         saveToErrorStateUpdate('Select .txt');
-        return
+        return;
       }
       saveToErrorStateUpdate('');
 
@@ -43,12 +45,15 @@ export const DownloadGroupButtons: React.FC<DownloadGroupButtonsProps> = () => {
           gene,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error downloading LOVD file:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, gene]);
+  }, [saveTo, override, gene, openAfterSave]);
 
   const handleDownloadClinvarClick = useCallback(async () => {
     blockedStateUpdate(true);
@@ -58,7 +63,7 @@ export const DownloadGroupButtons: React.FC<DownloadGroupButtonsProps> = () => {
       const savePath = saveTo !== defaultSaveTo ? saveTo.id : findUniqueFileName(fileTree, `clinvar_${timestamp}.csv`);
       if (getFileExtension(savePath) !== 'csv') {
         saveToErrorStateUpdate('Select .csv');
-        return
+        return;
       }
       saveToErrorStateUpdate('');
 
@@ -69,12 +74,15 @@ export const DownloadGroupButtons: React.FC<DownloadGroupButtonsProps> = () => {
           gene,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error downloading ClinVar file:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, gene]);
+  }, [saveTo, override, gene, openAfterSave]);
 
   const handleDownloadGnomadClick = useCallback(async () => {
     blockedStateUpdate(true);
@@ -84,7 +92,7 @@ export const DownloadGroupButtons: React.FC<DownloadGroupButtonsProps> = () => {
       const savePath = saveTo !== defaultSaveTo ? saveTo.id : findUniqueFileName(fileTree, `gnomad_${timestamp}.csv`);
       if (getFileExtension(savePath) !== 'csv') {
         saveToErrorStateUpdate('Select .csv');
-        return
+        return;
       }
       saveToErrorStateUpdate('');
 
@@ -95,12 +103,15 @@ export const DownloadGroupButtons: React.FC<DownloadGroupButtonsProps> = () => {
           gene,
         },
       });
+      // Open file after saving
+      if (openAfterSave) openFileByPath(savePath);
+      // ---
     } catch (error) {
       console.error('Error downloading gnomAD file:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, gene]);
+  }, [saveTo, override, gene, openAfterSave]);
 
   const buttons: ToolbarGroupItemProps[] = useMemo(
     () => [
