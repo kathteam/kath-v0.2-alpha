@@ -13,8 +13,16 @@ export interface ApplyGroupButtonsProps {}
 export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
   const { blockedStateUpdate } = useStatusContext();
   const { fileTree, openFileByPath } = useWorkspaceContext();
-  const { saveTo, saveToErrorStateUpdate, override, applyTo, applyErrorStateUpdate, openAfterSave } =
-    useToolbarContext();
+  const {
+    saveTo,
+    saveToErrorStateUpdate,
+    override,
+    applyTo,
+    applyErrorStateUpdate,
+    saveToStateUpdate,
+    openAfterSave,
+    gene,
+  } = useToolbarContext();
 
   const applySpliceAiClick = useCallback(async () => {
     if (!applyTo) {
@@ -113,40 +121,15 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, applyTo, openAfterSave]);
+  }, [fileTree, saveTo, override, applyTo, openAfterSave]);
 
   const applyAllClick = useCallback(async () => {
-    if (!applyTo) {
-      applyErrorStateUpdate('Please select a file');
-      return;
-    }
-
-    blockedStateUpdate(true);
-
-    try {
-      const timestamp = generateTimestamp();
-      const savePath =
-        saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `apply_all_${timestamp}.csv`);
-      if (getFileExtension(savePath) !== 'csv') {
-        saveToErrorStateUpdate('Select .csv');
-        return;
-      }
-
-      await axios.get(`${Endpoints.WORKSPACE_APPLY}/all/${savePath}`, {
-        params: {
-          override,
-          applyTo: applyTo.id,
-        },
-      });
-      // Open file after saving
-      if (openAfterSave) openFileByPath(savePath);
-      // ---
-    } catch (error) {
-      console.error('Error applying ALL:', error);
-    } finally {
-      blockedStateUpdate(false);
-    }
-  }, [saveTo, override, applyTo, openAfterSave]);
+    await applySpliceAiClick();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await applyCaddClick();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await applyRevelClick();
+  }, [applySpliceAiClick, applyCaddClick, applyRevelClick, gene]);
 
   const buttons: ToolbarGroupItemProps[] = useMemo(
     () => [
