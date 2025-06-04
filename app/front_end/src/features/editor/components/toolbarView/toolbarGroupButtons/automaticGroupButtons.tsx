@@ -16,116 +16,97 @@ export const AutomaticGroupButtons: React.FC<AutomaticGroupButtonsProps> = () =>
   const { saveTo, saveToErrorStateUpdate, override, gene } = useToolbarContext();
 
   const handlePerformAllClick = useCallback(async () => {
+    // Last step is Revel, therefore we check for errors for Revel and use the save to path only for Revel file
+    const revelTimestamp = generateTimestamp();
+    const revelSavePath =
+      saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `auto_revel_${revelTimestamp}.csv`);
+    if (getFileExtension(revelSavePath) !== 'csv') {
+      saveToErrorStateUpdate('Select .csv');
+      return;
+    }
+
+    blockedStateUpdate(true);
+
     try {
       // --- Download LOVD ---
-      blockedStateUpdate(true);
-      let lovdFilePath = '';
-      try {
-        const timestamp = generateTimestamp();
-        const savePath = findUniqueFileName(fileTree, `lovd_${timestamp}.txt`);
+      const lovdFilePath = findUniqueFileName(fileTree, `lovd_${generateTimestamp()}.txt`);
+      await axios.get(`${Endpoints.WORKSPACE_DOWNLOAD}/${lovdFilePath}`, {
+        params: { source: 'lovd', override, gene },
+      });
 
-        await axios.get(`${Endpoints.WORKSPACE_DOWNLOAD}/${savePath}`, {
-          params: { source: 'lovd', override, gene },
-        });
-        lovdFilePath = savePath;
-      } catch (error) {
-        console.error('Error downloading LOVD file:', error);
-      } finally {
-        blockedStateUpdate(false);
-      }
-
-      // Simulated delay, because workspace structure needs time to update
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
+      blockedStateUpdate(true); // Auto-Refreshing workspace unblocks the UI, need to reblock again
 
       // --- Download ClinVar ---
+      const clinvarFilePath = findUniqueFileName(fileTree, `clinvar_${generateTimestamp()}.csv`);
+      await axios.get(`${Endpoints.WORKSPACE_DOWNLOAD}/${clinvarFilePath}`, {
+        params: { source: 'clinvar', override, gene },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true);
-      let clinvarFilePath = '';
-      try {
-        const timestamp = generateTimestamp();
-        const savePath = findUniqueFileName(fileTree, `clinvar_${timestamp}.csv`);
-
-        await axios.get(`${Endpoints.WORKSPACE_DOWNLOAD}/${savePath}`, {
-          params: { source: 'clinvar', override, gene },
-        });
-        clinvarFilePath = savePath;
-      } catch (error) {
-        console.error('Error downloading ClinVar file:', error);
-      } finally {
-        blockedStateUpdate(false);
-      }
-
-      // Simulated delay, because workspace structure needs time to update
-      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // --- Download gnomAD ---
+      const gnomadFilePath = findUniqueFileName(fileTree, `gnomad_${generateTimestamp()}.csv`);
+      await axios.get(`${Endpoints.WORKSPACE_DOWNLOAD}/${gnomadFilePath}`, {
+        params: { source: 'gnomad', override, gene },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true);
-      let gnomadFilePath = '';
-      try {
-        const timestamp = generateTimestamp();
-        const savePath = findUniqueFileName(fileTree, `gnomad_${timestamp}.csv`);
 
-        await axios.get(`${Endpoints.WORKSPACE_DOWNLOAD}/${savePath}`, {
-          params: { source: 'gnomad', override, gene },
-        });
-        gnomadFilePath = savePath;
-      } catch (error) {
-        console.error('Error downloading gnomAD file:', error);
-      } finally {
-        blockedStateUpdate(false);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
       // --- Merge ALL ---
+      const mergeAllFilePath = findUniqueFileName(fileTree, `all_merged_${generateTimestamp()}.csv`);
+      await axios.get(`${Endpoints.WORKSPACE_MERGE}/all/${mergeAllFilePath}`, {
+        params: {
+          override,
+          lovdFile: lovdFilePath,
+          clinvarFile: clinvarFilePath,
+          gnomadFile: gnomadFilePath,
+          customFile: '',
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true);
-      let mergeAllFilePath = '';
-      try {
-        const timestamp = generateTimestamp();
-        const savePath = findUniqueFileName(fileTree, `all_merged_${timestamp}.csv`);
 
-        await axios.get(`${Endpoints.WORKSPACE_MERGE}/all/${savePath}`, {
-          params: {
-            override,
-            lovdFile: lovdFilePath,
-            clinvarFile: clinvarFilePath,
-            gnomadFile: gnomadFilePath,
-            customFile: '',
-          },
-        });
-        mergeAllFilePath = savePath;
-      } catch (error) {
-        console.error('Error merging all files:', error);
-      } finally {
-        blockedStateUpdate(false);
-      }
+      // --- Apply SpliceAI ---
+      const applySpliceAiFilePath = findUniqueFileName(fileTree, `spliceai_${generateTimestamp()}.csv`);
+      await axios.get(`${Endpoints.WORKSPACE_APPLY}/spliceai/${applySpliceAiFilePath}`, {
+        params: {
+          override,
+          applyTo: mergeAllFilePath,
+        },
+      });
 
-      // Simulated delay, because workspace structure needs time to update
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // --- Apply All ---
-      // (Last step for Automatic Task, so the file name is auto_X.csv)
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
       blockedStateUpdate(true);
-      try {
-        const timestamp = generateTimestamp();
-        const savePath =
-          saveTo.id !== defaultSaveTo.id ? saveTo.id : findUniqueFileName(fileTree, `auto_${timestamp}.csv`);
-        if (getFileExtension(savePath) !== 'csv') {
-          saveToErrorStateUpdate('Select .csv');
-          return;
-        }
-        await axios.get(`${Endpoints.WORKSPACE_APPLY}/all/${savePath}`, {
-          params: { override, applyTo: mergeAllFilePath },
-        });
-      } catch (error) {
-        console.error('Error applying ALL:', error);
-      } finally {
-        blockedStateUpdate(false);
-      }
+
+      // --- Apply CADD ---
+      const applyCaddFilePath = findUniqueFileName(fileTree, `cadd_${generateTimestamp()}.csv`);
+      await axios.get(`${Endpoints.WORKSPACE_APPLY}/cadd/${applyCaddFilePath}`, {
+        params: {
+          override,
+          applyTo: applySpliceAiFilePath,
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulated delay, because workspace structure needs time to update
+      blockedStateUpdate(true);
+
+      // --- Apply REVEL ---
+      await axios.get(`${Endpoints.WORKSPACE_APPLY}/revel/${revelSavePath}`, {
+        params: {
+          override,
+          applyTo: applyCaddFilePath,
+        },
+      });
     } catch (error) {
-      console.error('Error downloading performing automatic task:', error);
+      console.error('Automated task failed:', error);
     } finally {
       blockedStateUpdate(false);
     }
-  }, [saveTo, override, gene]);
+  }, [fileTree, override, gene]);
 
   const buttons: ToolbarGroupItemProps[] = useMemo(
     () => [
