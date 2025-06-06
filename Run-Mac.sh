@@ -10,9 +10,9 @@ check_docker_running() {
 
 # Check if Docker Desktop is installed
 if [ ! -d "/Applications/Docker.app" ]; then
-      echo "Docker Desktop is not installed."
+    echo "Docker Desktop is not installed."
 
-      # Check if Homebrew is installed
+    # Check if Homebrew is installed
     if ! command -v brew &>/dev/null; then
         echo "Homebrew is not installed. Installing Homebrew..."
 
@@ -26,11 +26,11 @@ if [ ! -d "/Applications/Docker.app" ]; then
         echo "Homebrew is already installed."
     fi
 
-      # Install Docker Desktop using Homebrew
-      echo "Installing Docker Desktop..."
-      brew install --cask docker
+    # Install Docker Desktop using Homebrew
+    echo "Installing Docker Desktop..."
+    brew install --cask docker
 
-      # Verify installation
+    # Verify installation
     if [ -d "/Applications/Docker.app" ]; then
         echo "Docker Desktop has been successfully installed!"
     else
@@ -55,19 +55,21 @@ if ! check_docker_running; then
     # Wait for Docker to start
     while ! check_docker_running; do
         sleep 1
-        echo -n "Waiting."
+        echo -n "."
     done
-      echo "Docker Desktop is up and running."
+    echo -e "\nDocker Desktop is up and running."
 else
     echo "Docker Desktop is already running."
 fi
 
+# Create directory
 mkdir -p "$HOME/Desktop/kath"
+
 # Run a kath container
 echo "Running Docker container..."
 docker run -t --rm --name kath -p 8080:8080 -p 5173:5173 -v "$HOME/Desktop/kath/:/kath/app/back_end/src/workspace" cpu64/kath:final
 
-# Wait indefinitely
+# TODO: figure out and fix quitting
 while check_docker_running; do
     sleep 1
 done
