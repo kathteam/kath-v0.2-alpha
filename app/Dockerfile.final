@@ -1,19 +1,34 @@
-FROM cpu64/kath:base
+FROM --platform=linux/amd64 cpu64/kath:files AS files
+
+FROM nikolaik/python-nodejs:python3.12-nodejs24-slim
+
+COPY --chmod=644 --link --from=files /hg38.fa /
+COPY --chmod=644 --link --from=files /revel_with_transcript_ids.db /
+COPY --chmod=644 --link --from=files /hg19ToHg38.over.chain.gz /root/.pyliftover/
+COPY --chmod=644 --link --from=files /packages.mozilla.org.asc /etc/apt/keyrings/
+
+# Setup Mozilla APT repository for Firefox
+RUN echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" > /etc/apt/sources.list.d/mozilla.list && \
+    echo "Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n\nPackage: firefox*\nPin: release o=Ubuntu\nPin-Priority: -1" > /etc/apt/preferences.d/mozilla
+
+RUN apt-get update && \
+    apt-get install redis-server firefox -y --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
 
 ARG APP_DIR="/kath/app"
 
 WORKDIR ${APP_DIR}
 
-COPY ./back_end/requirements.txt .
+COPY --link ./back_end/requirements.txt .
 RUN MAKEFLAGS="-j$(nproc)" pip install --no-cache-dir --break-system-packages --root-user-action ignore -r ./requirements.txt
 
-COPY ./front_end/package.json .
+COPY --link ./front_end/package.json .
 RUN npm install && mv ./node_modules /
 
 RUN mkdir -p ${APP_DIR}/back_end/src/workspace/fasta/ && \
-    ln -f /hg38.fa ${APP_DIR}/back_end/src/workspace/fasta/hg38.fa && \
+    ln -sf /hg38.fa ${APP_DIR}/back_end/src/workspace/fasta/hg38.fa && \
     mkdir -p ${APP_DIR}/back_end/src/workspace/revel/ && \
-    ln -f /revel_with_transcript_ids.db ${APP_DIR}/back_end/src/workspace/revel/revel_with_transcript_ids.db
+    ln -sf /revel_with_transcript_ids.db ${APP_DIR}/back_end/src/workspace/revel/revel_with_transcript_ids.db
 
 COPY . .
 
