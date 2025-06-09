@@ -11,7 +11,7 @@ import time
 import pandas as pd
 from flask import Blueprint, request, jsonify
 
-from ..setup.extensions import logger
+from ..setup.extensions import logger, env
 from ..utils.helpers import socketio_emit_to_user_session
 from ..utils.exceptions import UnexpectedError
 from ..constants import (
@@ -96,10 +96,8 @@ def get_workspace_apply_spliceai(relative_path):
         spliceai_dir = os.path.join(WORKSPACE_DIR, uuid, "spliceai")
         os.makedirs(spliceai_dir, exist_ok=True)
         try:
-            data_copy = pd.read_csv(apply_to).convert_dtypes()
-            result_data_spliceai = add_spliceai_eval_columns(data_copy,
-                                                              fasta_path,
-                                                              spliceai_dir)
+            data_copy = pd.read_csv(apply_to).convert_dtypes()[:env.get_max_entries()]
+            result_data_spliceai = add_spliceai_eval_columns(data_copy, fasta_path, spliceai_dir)
         except Exception as e:
             raise RuntimeError(f"Error applying SpliceAI algorithm: {e}")
 
@@ -271,8 +269,8 @@ def get_workspace_apply_cadd(relative_path):
         os.makedirs(cadd_dir, exist_ok=True)
 
         try:
-            result_data_cadd = cadd_pipeline((pd.read_csv(apply_to,low_memory=False)).convert_dtypes(),
-                                             cadd_dir)
+            data_copy = pd.read_csv(apply_to).convert_dtypes()[:env.get_max_entries()]
+            result_data_cadd = cadd_pipeline(data_copy, cadd_dir)
         except Exception as e:
             raise RuntimeError(f"Error applying CADD algorithm: {e}")
 
@@ -398,7 +396,7 @@ def get_workspace_apply_revel(relative_path):
             jsonify({"error": "'override', and 'applyTo' parameters are required"}),
             400,
         )
-        
+
     destination_path = os.path.join(WORKSPACE_DIR, uuid, relative_path)
     override = request.args.get("override")
     apply_to = os.path.join(WORKSPACE_DIR, uuid, request.args.get("applyTo"))
