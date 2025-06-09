@@ -66,6 +66,8 @@ fi
 mkdir -p "$HOME/Desktop/kath"
 
 # Run a kath container
+echo "Downloading Docker container..."
+docker pull cpu64/kath:final
 echo "Running Docker container..."
 docker run -t --rm --name kath -p 8080:8080 -p 5173:5173 -v "$HOME/Desktop/kath/:/kath/app/back_end/src/workspace" cpu64/kath:final
 

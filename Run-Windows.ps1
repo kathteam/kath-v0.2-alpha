@@ -74,6 +74,8 @@ if (-not (Test-Path $folderPath)) {
 }
 
 # Run kath container
+Write-Host "Downloading Docker container..."
+docker pull cpu64/kath:final
 Write-Host "Running Docker container..."
 docker run -t --rm --name kath -p 8080:8080 -p 5173:5173 -v "$folderPath:/kath/app/back_end/src/workspace" cpu64/kath:final
 
