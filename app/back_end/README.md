@@ -119,14 +119,8 @@ This guide provides instructions on setting up and running a Flask-based develop
    ```powershell
    pip install -r requirements_dev.txt
    ```
-6. **Install SpliceAI:**
-   
-   While Python Virtual Environment is activated, install spliceai:
-   ```powershell
-   git clone https://github.com/Akaud/SpliceAI.git && cd SpliceAI && pip install . && cd .. && rm -rf SpliceAI
-   ```
 
-7. **Configure Python Interpreter:**
+6. **Configure Python Interpreter:**
    - Open the Command Palette `Ctrl+Shift+P`, type `>Python: Select Interpreter`, and select the Python interpreter from your WSL virtual environment:
       - Select `Enter interpreter path...`
       - Select `Find...`
