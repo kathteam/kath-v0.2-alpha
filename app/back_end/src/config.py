@@ -14,6 +14,7 @@ Dependencies:
 # pylint: disable=import-error
 
 import os
+import sys
 from dotenv import load_dotenv
 
 
@@ -38,20 +39,6 @@ class Env:
         load_dotenv(cls.DOTENV_PATH)
 
     @classmethod
-    def get(cls, key, default=None):
-        """
-        Retrieve an environment variable, returning a default value if it's not set.
-
-        Args:
-            key (str): The name of the environment variable to retrieve.
-            default: The default value to return if the environment variable is not set.
-
-        Returns:
-            str: The value of the environment variable, or the default value if not found.
-        """
-        return os.getenv(key, default)
-
-    @classmethod
     def get_flask_run_host(cls):
         """
         Get the Flask server host from environment variables.
@@ -61,7 +48,7 @@ class Env:
         Returns:
             str: The host address, defaulting to "0.0.0.0".
         """
-        return cls.get("FLASK_RUN_HOST", "0.0.0.0")
+        return os.getenv("FLASK_RUN_HOST", "0.0.0.0")
 
     @classmethod
     def get_flask_run_port(cls):
@@ -73,7 +60,7 @@ class Env:
         Returns:
             int: The port number, defaulting to 8080.
         """
-        return cls.get("FLASK_RUN_PORT", 8080)
+        return os.getenv("FLASK_RUN_PORT", 8080)
 
     @classmethod
     def get_origins(cls):
@@ -85,7 +72,7 @@ class Env:
         Returns:
             list: A list of origins allowed for CORS, defaulting to ["*"].
         """
-        origins = cls.get("ORIGINS", "*")
+        origins = os.getenv("ORIGINS", "*")
         return origins.split(",")
 
     @classmethod
@@ -98,4 +85,19 @@ class Env:
         Returns:
             str: The Redis URL, defaulting to "redis://localhost:6379/0".
         """
-        return cls.get("REDIS_URL", "redis://localhost:6379/0")
+        return os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
+    @classmethod
+    def get_max_entries(cls):
+        """
+        Get the maximum number of entries to process from environment variables. Works on spliceai and cadd.
+
+        This is used to limit the number of entries to process when testing.
+
+        Returns:
+            int: The maximum number of entries to process, or sys.maxsize if no limit.
+        """
+        try:
+            return int(os.getenv("MAX_ENTRIES", str(sys.maxsize)))
+        except ValueError as e:
+            raise ValueError(f"Invalid value for MAX_ENTRIES: {os.getenv('MAX_ENTRIES')}. It must be an integer or unset.") from e

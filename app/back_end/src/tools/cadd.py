@@ -26,7 +26,7 @@ def create_cadd_input_files(chunk: pd.DataFrame, cadd_folder_path: str, chunk_id
     """
     Generates a VCF (Variant Call Format) file from a dataframe chunk for CADD processing.
 
-    This function takes a portion of genomic data (`chunk`), writes it to a VCF file 
+    This function takes a portion of genomic data (`chunk`), writes it to a VCF file
     in the specified folder, and returns the file path along with the chunk ID.
 
     Args:
@@ -84,8 +84,8 @@ def gzip_file(file_path: str):
     """
     Compresses a file into a .gz format.
 
-    This function takes a file at the given file path and compresses it 
-    into a .gz file by reading the original file and writing it to a 
+    This function takes a file at the given file path and compresses it
+    into a .gz file by reading the original file and writing it to a
     gzipped version.
 
     Args:
@@ -108,9 +108,9 @@ def send_cadd_input_files(gzipped_chunk_path:str,chunk_id:int):
     """
     Uploads a gzipped genomic data chunk to the CADD web service and retrieves the job URL.
 
-    This function automates the process of submitting a gzipped genomic variant file 
-    to the CADD (Combined Annotation Dependent Depletion) web service using a Firefox 
-    web driver. After submission, it waits for the job to complete and returns the URL 
+    This function automates the process of submitting a gzipped genomic variant file
+    to the CADD (Combined Annotation Dependent Depletion) web service using a Firefox
+    web driver. After submission, it waits for the job to complete and returns the URL
     for checking the job status.
 
     Args:
@@ -121,7 +121,7 @@ def send_cadd_input_files(gzipped_chunk_path:str,chunk_id:int):
         tuple: A tuple containing:
             - chunk_id (int): The identifier of the processed chunk.
             - job_url (str): The URL to check the status of the CADD job.
-    
+
     Raises:
         TimeoutException: If the status or availability link is not found within the given time.
     """
@@ -187,16 +187,16 @@ def extract_job_file(url:str):
     raise CaddError("CADD server: Invalid URL format - filename not found.")
 
 
-def get_cadd_output_files(cadd_job_url: str, cadd_output_dir: str, chunk_id: int,max_retries=3):
+def get_cadd_output_files(cadd_job_url: str, cadd_output_dir: str, chunk_id: int,max_retries=15):
     """Downloads CADD output file while preventing infinite loops.
-    
+
     Args:
         cadd_job_url (str): The URL of the CADD job.
         cadd_output_dir (str): The directory to save the output file.
         chunk_id (int): The chunk identifier.
         max_retries (int): Maximum number of retries before giving up.
         retry_interval (int): Time (in seconds) between retries.
-    
+
     Returns:
         tuple: (chunk_id, job_id) if successful, else raises TimeoutException.
     """
@@ -235,7 +235,7 @@ def get_cadd_output_files(cadd_job_url: str, cadd_output_dir: str, chunk_id: int
                         f"after {max_retries} attempts."
                     )
                     raise CaddError(error_message) from e
-                time.sleep(60)
+                time.sleep(120)
     driver.quit()
     return chunk_id, job_file
 
@@ -244,7 +244,7 @@ def gunzip_file(file_path: str, chunk_id: int):
     """
     Uncompresses a .gz file to its uncompressed version.
 
-    This function takes a gzipped file at the given file path and uncompresses it 
+    This function takes a gzipped file at the given file path and uncompresses it
     by reading the .gz file and extracting it to an uncompressed version.
 
     Args:
@@ -253,7 +253,7 @@ def gunzip_file(file_path: str, chunk_id: int):
 
     Returns:
         tuple: A tuple containing the chunk_id and the path to the uncompressed file.
-    
+
     Raises:
         CaddError: If an error occurs during the decompression process.
     """
@@ -272,9 +272,9 @@ def parse_variant(variant_str:str):
     Parses a variant string and extracts chromosome, position, reference, and alternative alleles.
 
     The function takes a variant string in the format of `chrom-pos-ref-alt` (e.g., `1-123-A-G`),
-    and splits it into the individual components. 
+    and splits it into the individual components.
     If the string contains only chromosome and position
-    (e.g., `1-123`), it will assume reference and 
+    (e.g., `1-123`), it will assume reference and
     alternative alleles as missing (represented by `"."`).
 
     Args:
@@ -306,8 +306,8 @@ def parse_tsv(file_path:str)->pd.DataFrame:
     """
     Parses a TSV file and returns a DataFrame with two columns: 'cadd_gen_position' and 'PHRED'.
 
-    The function reads the TSV file, skipping comment lines, and generates a new column, 
-    'cadd_gen_position', by concatenating 'Chrom', 'Pos', 'Ref', and 'Alt'. It also extracts 
+    The function reads the TSV file, skipping comment lines, and generates a new column,
+    'cadd_gen_position', by concatenating 'Chrom', 'Pos', 'Ref', and 'Alt'. It also extracts
     the 'PHRED' scores.
 
     Args:
@@ -332,12 +332,12 @@ def parse_tsv(file_path:str)->pd.DataFrame:
 def merge_with_tsv(data_chunk:pd.DataFrame, tsv_chunk):
     """
     Merges the given data_chunk with the tsv_chunk DataFrame based on matching values
-    between the 'cadd_gen_position' column in tsv_chunk and the corresponding columns 
+    between the 'cadd_gen_position' column in tsv_chunk and the corresponding columns
     ('hg38_gnomad_format', 'variant_id_gnomad', 'hg38_ID_clinvar') in data_chunk.
-    
-    The function uses the first non-empty value from these 
+
+    The function uses the first non-empty value from these
     columns to construct the 'cadd_gen_position' key.
-    If a matching CADD score is not found in tsv_chunk, 
+    If a matching CADD score is not found in tsv_chunk,
     the PHRED value will be set to "Cadd score unavailable".
 
     Args:
@@ -355,14 +355,14 @@ def merge_with_tsv(data_chunk:pd.DataFrame, tsv_chunk):
         right_on='cadd_gen_position',
         how='left'
     )
-    
+
     return merged_df.drop(columns=['cadd_gen_position'])
 
 
 def cadd_pipeline(dataframe: pd.DataFrame, cadd_folder_path: str) -> pd.DataFrame:
     """
-    Process genomic data through multiple stages of file creation, uploading, 
-    fetching results, parsing, and merging with CADD data. 
+    Process genomic data through multiple stages of file creation, uploading,
+    fetching results, parsing, and merging with CADD data.
 
     Args:
         dataframe (pd.DataFrame): The input genomic data.
