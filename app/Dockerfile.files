@@ -1,0 +1,21 @@
+FROM python:3.9.23-alpine3.22
+
+RUN apk add --no-cache curl unzip
+
+# Downloading hg38.fa.gz file needed for SpliceAI
+RUN curl "https://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz" | gunzip -c > hg38.fa
+
+# Downloading hg19ToHg38.over.chain.gz file needed for pyliftover
+RUN curl -O "http://hgdownload2.cse.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz"
+
+COPY --link ./back_end/src/scripts/revel.py /revel.py
+
+# Downloading and converting revel-v1.3_all_chromosomes.zip file needed for REVEL
+RUN curl -O "https://rothsj06.dmz.hpc.mssm.edu/revel-v1.3_all_chromosomes.zip" && \
+    unzip revel-v1.3_all_chromosomes.zip && \
+    pip install --no-cache-dir --root-user-action ignore -t /delete tqdm && \
+    PYTHONPATH=/delete python3 /revel.py revel_with_transcript_ids /revel_with_transcript_ids.db && \
+    rm -rf revel-v1.3_all_chromosomes.zip /revel_with_transcript_ids /delete
+
+ADD --chmod=644 https://packages.mozilla.org/apt/repo-signing-key.gpg /packages.mozilla.org.asc
+
