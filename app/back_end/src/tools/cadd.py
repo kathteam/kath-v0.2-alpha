@@ -14,6 +14,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.firefox.service import Service
 
 
 class CaddError(Exception):
@@ -126,9 +127,11 @@ def send_cadd_input_files(gzipped_chunk_path:str,chunk_id:int):
         TimeoutException: If the status or availability link is not found within the given time.
     """
     options = webdriver.FirefoxOptions()
+    options.binary_location = "/usr/bin/firefox"
     options.add_argument("--headless")
     options.set_preference("browser.download.manager.showWhenStarting", False)
-    driver = webdriver.Firefox(options=options)
+    service = Service(executable_path="/usr/local/bin/geckodriver")
+    driver = webdriver.Firefox(service=service, options=options)
     driver.get("https://cadd.bihealth.org/score")
 
     file_input = WebDriverWait(driver, 20).until(
@@ -201,13 +204,14 @@ def get_cadd_output_files(cadd_job_url: str, cadd_output_dir: str, chunk_id: int
         tuple: (chunk_id, job_id) if successful, else raises TimeoutException.
     """
     options = webdriver.FirefoxOptions()
+    options.binary_location = "/usr/bin/firefox"
     options.add_argument("--headless")
     options.set_preference("browser.download.folderList", 2)
     options.set_preference("browser.download.manager.showWhenStarting", False)
     options.set_preference("browser.download.dir", cadd_output_dir)
     options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/gzip")
-
-    driver = webdriver.Firefox(options=options)
+    service = Service(executable_path="/usr/local/bin/geckodriver")
+    driver = webdriver.Firefox(service=service, options=options)
     retry_count = 0
 
     driver.get(cadd_job_url)
