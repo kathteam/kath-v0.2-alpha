@@ -12,8 +12,23 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://pac
     echo "Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n\nPackage: firefox*\nPin: release o=Ubuntu\nPin-Priority: -1" > /etc/apt/preferences.d/mozilla
 
 RUN apt-get update && \
-    apt-get install redis-server firefox -y --no-install-recommends && \
+    apt-get install redis-server firefox wget ca-certificates -y --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
+
+RUN ARCH=$(uname -m) && \
+    echo "Detected architecture: $ARCH" && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        GECKO_URL="https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux32.tar.gz"; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        GECKO_URL="https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux-aarch64.tar.gz"; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    echo "Downloading from $GECKO_URL" && \
+    wget "$GECKO_URL" -O /tmp/geckodriver.tar.gz && \
+    tar -xzf /tmp/geckodriver.tar.gz -C /usr/local/bin/ && \
+    chmod +x /usr/local/bin/geckodriver && \
+    rm /tmp/geckodriver.tar.gz
 
 ARG APP_DIR="/kath/app"
 
