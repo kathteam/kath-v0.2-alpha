@@ -9,9 +9,9 @@ function generateUUID() {
 /**
  * Retrieves a UUID from localStorage or generates a new one if not present.
  *
- * @description This function checks if a UUID is stored in the browser's localStorage under the key 'uuid'. 
- * If a UUID is found, it returns the stored UUID. If no UUID is found, it generates a new UUID using the `generateUUID` 
- * function, stores it in localStorage, and then returns it. This ensures that a unique identifier is consistently used 
+ * @description This function checks if a UUID is stored in the browser's localStorage under the key 'uuid'.
+ * If a UUID is found, it returns the stored UUID. If no UUID is found, it generates a new UUID using the `generateUUID`
+ * function, stores it in localStorage, and then returns it. This ensures that a unique identifier is consistently used
  * across different sessions for the same user.
  *
  * @returns {string} The UUID retrieved from localStorage or a newly generated UUID.
@@ -27,7 +27,8 @@ export function getUUID() {
 
   if (!uuid) {
     // If not present, generate a new UUID
-    uuid = generateUUID();
+    // uuid = generateUUID();
+    uuid = "8d8ac610-566d-4ef0-9c22-186b2a5ed793";
     localStorage.setItem('uuid', uuid);
   }
 
