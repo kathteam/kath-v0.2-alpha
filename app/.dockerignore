@@ -4,6 +4,10 @@
 **/.eslintrc.cjs
 **/.prettierrc.cjs
 **/.gitignore
+**/.venv
+**/__pycache__
+back_end/src/workspace/*
+!back_end/src/workspace/template/
 
 # Logs
 **/logs
@@ -23,7 +27,6 @@
 # Editor directories and files
 **/.vs
 **/.vscode
-!.vscode/extensions.json
 **/.idea
 .DS_Store
 *.suo
@@ -31,14 +34,3 @@
 *.njsproj
 *.sln
 *.sw?
-
-
-**/.dockerignore
-**/.idea
-**/.venv
-**/.vs
-**/.vscode
-**/Dockerfile*
-**/README.md
-**/__pycache__
-requirements_dev.txt
