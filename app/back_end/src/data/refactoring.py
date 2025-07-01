@@ -357,7 +357,7 @@ def merge_gnomad_lovd(lovd:pd.DataFrame, gnomad:pd.DataFrame):
     merged_frame = pd.merge(
         lovd,
         gnomad,
-        how="outer",
+        how="left",
         left_on="hg38_gnomad_format",
         right_on="variant_id_gnomad"
     )
