@@ -450,6 +450,18 @@ def merge_lovd_clinvar(lovd:pd.DataFrame, clinvar:pd.DataFrame):
         left_on="hg38_gnomad_format",
         right_on="hg38_ID_clinvar"
     )
+
+    merged_frame['VariantOnTranscript/DNA'] = merged_frame['VariantOnTranscript/DNA'].fillna(
+        merged_frame['Name_clinvar'].astype(str).str.extract(r':(c\.[^ ]+)')[0]
+    )
+
+    merged_frame['VariantOnTranscript/Protein'] = merged_frame['VariantOnTranscript/Protein'].fillna(
+        merged_frame['Name_clinvar'].astype(str).str.extract(r'\ \((p\.[^)]*)\)')[0]
+    )
+
+    merged_frame['malformed'] = merged_frame['Name_clinvar'].where(merged_frame['VariantOnTranscript/DNA'].isna())
+
+
     return merged_frame
 
 
@@ -683,6 +695,7 @@ def process_genomic_data(df: pd.DataFrame) -> pd.DataFrame:
     annotation_cols = [
         "VariantOnTranscript/DNA",
         "VariantOnTranscript/Protein",
+        "malformed",
         "VariantOnGenome/ClinicalClassification",
         "Germline classification_clinvar",
         "Allele Frequency_gnomad",
