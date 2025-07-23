@@ -30,6 +30,7 @@ import os
 import subprocess
 import pandas as pd
 from datetime import datetime
+from src import env
 
 
 
@@ -152,8 +153,11 @@ def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, annotation="grch38"
         "-R", fasta,
         "-A", annotation,
         "-D", "500",
-        # "-B", '32',
     ]
+
+    if env.get_use_cuda():
+        spliceai_command.extend(["-B", env.get_cuda_batch_size()])
+
     try:
         result = subprocess.run(spliceai_command, capture_output=True, text=True, check=True)
         if result.returncode != 0:
