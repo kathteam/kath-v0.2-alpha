@@ -1,6 +1,6 @@
 FROM --platform=linux/amd64 cpu64/kath:files AS files
 
-FROM nikolaik/python-nodejs:python3.12-nodejs24-slim
+FROM nvidia/cuda:12.9.1-base-ubuntu24.04
 
 COPY --chmod=644 --link --from=files /hg38.fa /
 COPY --chmod=644 --link --from=files /revel_with_transcript_ids.db /
@@ -12,7 +12,7 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://pac
     echo "Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n\nPackage: firefox*\nPin: release o=Ubuntu\nPin-Priority: -1" > /etc/apt/preferences.d/mozilla
 
 RUN apt-get update && \
-    apt-get install redis-server firefox wget ca-certificates -y --no-install-recommends && \
+    apt-get install python3.12 python3-pip redis-server firefox wget ca-certificates -y --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ARCH=$(uname -m) && \
@@ -36,6 +36,11 @@ WORKDIR ${APP_DIR}
 
 COPY --link ./back_end/requirements.txt .
 RUN MAKEFLAGS="-j$(nproc)" pip install --no-cache-dir --break-system-packages --root-user-action ignore -r ./requirements.txt
+
+RUN wget -qO- https://deb.nodesource.com/setup_24.x | bash - && \
+    apt-get update && \
+    apt-get install -y nodejs && \
+    node -v && npm -v
 
 COPY --link ./front_end/package.json .
 RUN npm install && mv ./node_modules /
