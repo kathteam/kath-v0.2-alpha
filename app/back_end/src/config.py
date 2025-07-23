@@ -101,3 +101,24 @@ class Env:
             return int(os.getenv("MAX_ENTRIES", str(sys.maxsize)))
         except ValueError as e:
             raise ValueError(f"Invalid value for MAX_ENTRIES: {os.getenv('MAX_ENTRIES')}. It must be an integer or unset.") from e
+
+    @classmethod
+    def get_use_cuda(cls):
+        """
+        Check whether CUDA should be used for SpliceAI.
+
+        Returns:
+            bool: True if CUDA is enabled, False otherwise.
+        """
+        return os.getenv("CUDA", "false").lower() == "true"
+
+    @classmethod
+    def get_cuda_batch_size(cls):
+        """
+        Get the CUDA batch size for SpliceAI.
+
+        Returns:
+            str: Batch size, defaulting to "32".
+        """
+        return os.getenv("CUDA_BATCH_SIZE", "32")
+
