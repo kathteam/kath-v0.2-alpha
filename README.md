@@ -69,6 +69,7 @@ We proudly acknowledge our advisors who contribute their expertise and resources
 ### ⚙️ Setup Instructions
 
 For a complete setup, follow these steps and refer to the `README.md` files in `app/front_end` and `app/back_end` for detailed configurations.
+**Or** read `README.md` file in `app/` for docker instrucions.
 
 1. **Clone the Repository**
 
