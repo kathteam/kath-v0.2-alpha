@@ -12,7 +12,7 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://pac
     echo "Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n\nPackage: firefox*\nPin: release o=Ubuntu\nPin-Priority: -1" > /etc/apt/preferences.d/mozilla
 
 RUN apt-get update && \
-    apt-get install python3.12 python3-pip redis-server firefox wget ca-certificates -y --no-install-recommends && \
+    apt-get install python3.12 python3-pip redis-server firefox wget ca-certificates git -y --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ARCH=$(uname -m) && \
