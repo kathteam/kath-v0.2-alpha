@@ -35,4 +35,4 @@ zope.interface~=7.0.1
 zstandard~=0.23.0
 tqdm==4.67.1
 tensorflow==2.19.0
-git+https://github.com/geertvandeweyer/SpliceAI.git
+git+https://github.com/Akaud/SpliceAI.git
