@@ -25,11 +25,14 @@ Returns:
 
 import gevent.monkey
 from flask import Flask
+import os
 
 from .setup.extensions import compress, socketio, cors, env
 from .setup.router import router
 from .setup.eventer import eventer
 from .constants import BASE_ROUTE
+from .utils.logging_config import setup_logging
+from .middleware import setup_request_logging
 
 
 def create_app():
@@ -58,14 +61,23 @@ def create_app():
     # Create Flask app instance
     app = Flask(__name__)
 
+    # Set up centralized logging (must be done early)
+    log_level = os.getenv('LOG_LEVEL', 'INFO')
+    logger = setup_logging(app_name='kath', log_level=log_level)
+    logger.info("Starting KATH application initialization")
+
     # Configure app settings
     app.config["COMPRESS_REGISTER"] = False  # disable default compression
     app.config["COMPRESS_MIMETYPES"] = ["text/csv"]
     app.config["COMPRESS_ALGORITHM"] = ["gzip"]
     app.config["COMPRESS_LEVEL"] = 6
 
+    # Set up request logging middleware
+    setup_request_logging(app)
+
     # Initialize Flask extensions with the app instance
     compress.init_app(app)
+    logger.info("Compression initialized")
     socketio.init_app(
         app,
         async_mode="gevent",
@@ -73,12 +85,19 @@ def create_app():
         message_queue=env.get_redis_url(),
         max_http_buffer_size=50 * 1024 * 1024,
     )
+    logger.info("Socket.IO initialized")
+
     cors.init_app(app, resources={r"*": {"origins": env.get_origins()}})
+    logger.info("CORS initialized")
 
     # Set up event handlers
     eventer()
+    logger.info("Event handlers registered")
 
     # Register main application routes
     app.register_blueprint(router(BASE_ROUTE))
+    logger.info(f"Routes registered at {BASE_ROUTE}")
+
+    logger.info("KATH application initialization complete")
 
     return app

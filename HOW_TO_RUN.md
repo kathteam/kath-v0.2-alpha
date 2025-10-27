@@ -104,12 +104,12 @@ If you see an error about ports 5173 or 8080 being in use:
 ## What Happens Behind the Scenes
 
 The scripts automatically:
-1. ✅ Check and install Docker
-2. ✅ Download the KATH container image
-3. ✅ Create a workspace folder for your data
-4. ✅ Start the KATH application
-5. ✅ Open your web browser
-6. ✅ Show you the logs so you can monitor the system
+1.  Check and install Docker
+2.  Download the KATH container image
+3.  Create a workspace folder for your data
+4.  Start the KATH application
+5.  Open your web browser
+6.  Show you the logs so you can monitor the system
 
 ## Data Storage
 
