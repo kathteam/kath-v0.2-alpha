@@ -67,9 +67,9 @@ mkdir -p "$HOME/Desktop/kath"
 
 # Run a kath container
 echo "Downloading Docker container..."
-docker pull cpu64/kath:final-arm64
+docker pull cpu64/kath:final-arm64-fixed
 echo "Running Docker container..."
-docker run -t --rm --name kath -p 8080:8080 -p 5173:5173 -v "$HOME/Desktop/kath/:/kath/app/back_end/src/workspace/8d8ac610-566d-4ef0-9c22-186b2a5ed793" cpu64/kath:final-arm64
+docker run -t --rm --name kath -p 8080:8080 -p 5173:5173 -v "$HOME/Desktop/kath/:/kath/app/back_end/src/workspace/8d8ac610-566d-4ef0-9c22-186b2a5ed793" cpu64/kath:final-arm64-fixed
 
 # TODO: figure out and fix quitting
 while check_docker_running; do
