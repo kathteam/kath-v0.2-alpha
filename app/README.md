@@ -12,4 +12,4 @@ CUDA_BATCH_SIZE -> CUDA batch size for SpliceAI. (default: 32)
 
 # Example command for running on x86 hardware:
 
-docker run --restart always --name kathAIO -it -p 8080:8080 -p 5173:5173 -e DOMAIN={server-IP} -v /data/:/kath/app/back_end/src/workspace/ cpu64/kath:final-amd64-fixed
+docker run --restart always --name kathAIO -it -p 8080:8080 -p 5173:5173 -e DOMAIN={server-IP} -v /data/:/kath/app/back_end/src/workspace/8d8ac610-566d-4ef0-9c22-186b2a5ed793/ cpu64/kath:final-amd64-fixed
