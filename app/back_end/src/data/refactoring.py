@@ -596,13 +596,17 @@ def parse_clinvar(rows: list[list[str]], variation_archives: list[ET.Element]):
         row.append(", ".join(proteins) if proteins else "")
 
         # Condition(s)
-        germline_classification = element.find("ClassifiedRecord/Classifications/GermlineClassification")
-        conditions = [
-            inner.text
-            for inner in germline_classification.findall("ConditionList/TraitSet/Trait/Name/ElementValue[@Type='Preferred']")
-            if inner.text is not None
-        ]
-        row.append("|".join(conditions) if conditions else "")
+        germline_classification = element.find( "ClassifiedRecord/Classifications/GermlineClassification" )
+        if germline_classification is None:
+            conditions = []
+        else:
+            conditions = [
+                inner.text
+                for inner in germline_classification.findall( "ConditionList/TraitSet/Trait/Name/ElementValue[@Type='Preferred']" )
+                if inner.text is not None
+            ]
+
+        row.append("|".join(conditions))
 
         # Accession
         accession = element.attrib.get("Accession")
