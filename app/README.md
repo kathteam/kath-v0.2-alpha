@@ -1,4 +1,4 @@
-Docker enviroment options:
+# Docker enviroment options:
 
 DOMAIN -> (default: localhost)
 PORT -> (default: 5173)
@@ -10,7 +10,6 @@ CUDA -> whether CUDA should be used for SpliceAI. (default: false)
 CUDA_BATCH_SIZE -> CUDA batch size for SpliceAI. (default: 32)
 
 
-Example command for running on x86 wardware with CUDA:
+# Example command for running on x86 wardware with CUDA:
 
-docker run --name kathAIO -it --rm -p 8080:8080 -p 5173:5173 -e MAX_ENTRIES=200 -e DOMAIN=localhost -v /data/:/kath/app/back_end/src/workspace/8d8ac610-566d-4ef0-9c2
-2-186b2a5ed793/ --gpus all -e CUDA=True cpu64/kath:final-amd64-testing-cuda
+docker run --restart always --name kathAIO -it --rm -p 8080:8080 -p 5173:5173 -e DOMAIN={server-IP} -v /data/:/kath/app/back_end/src/workspace/ cpu64/kath:final-amd64-fixed
