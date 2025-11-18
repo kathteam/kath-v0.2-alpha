@@ -15,7 +15,8 @@ BACKEND_PORT=8080
 WORKSPACE_DIR="$SCRIPT_DIR/data"
 DATABASE_DIR="$SCRIPT_DIR/database"
 WORKSPACE_UUID="default"
-RESOURCES_CONFIG="$SCRIPT_DIR/docker-resources.yaml"
+CONFIG_DIR="$SCRIPT_DIR/config"
+RESOURCES_CONFIG="$CONFIG_DIR/docker-resources.yaml"
 
 # Function to parse YAML values (simple parser for basic key: value pairs)
 get_yaml_value() {

@@ -1,20 +1,75 @@
-# KATH Network Configuration Guide
+# KATH Configuration Guide
 
 ## Overview
 
-KATH uses a flexible configuration system that allows network customization
-(ports, hostnames, etc.) **without rebuilding the Docker container**. This
-guide explains how to configure and use these settings.
+KATH uses a flexible, unified configuration system stored in the `config/` directory.
+This allows customization of network settings, resource limits, and tool parameters
+**without rebuilding the Docker container**. This guide explains how to configure
+and use these settings.
 
-## Configuration File
+## Configuration Files
 
-The network configuration is stored in `config/network_config.yaml`. This file defines:
+All configuration files are stored in the `config/` directory:
 
+### 1. `config/network_config.yaml` - Network Configuration
+Defines network and service settings:
 - Backend API port and hostname
 - Frontend server port and hostname
 - CORS allowed origins
 - Redis connection settings
 - Health check configuration
+
+### 2. `config/docker-resources.yaml` - Resource Limits
+Defines Docker resource constraints and tool parameters:
+- Docker memory limits (prevents system freezing)
+- Docker CPU limits
+- Tool-specific settings (CADD worker processes, chunk sizes)
+- Performance tuning parameters
+- Memory monitoring thresholds
+
+## Unified Configuration Structure
+
+The `config/` directory is the single source of truth for all system configuration:
+
+```
+config/
+├── network_config.yaml       # Network settings (ports, hostnames, CORS, Redis)
+└── docker-resources.yaml     # Resource limits (memory, CPU, worker processes)
+```
+
+### Configuration Loading Flow
+
+1. **Startup Scripts** (`start-kath.sh`):
+   - Reads `config/docker-resources.yaml`
+   - Extracts resource limits and tool parameters
+   - Passes them to Docker as environment variables and resource flags
+
+2. **Docker Container**:
+   - Mounts entire `config/` directory
+   - Backend reads `config/network_config.yaml` for service configuration
+   - Tool processes read environment variables (set from `config/docker-resources.yaml`)
+
+3. **Runtime Changes**:
+   - Modify YAML files in `config/` directory
+   - Restart container with `./start-kath.sh` or `docker restart`
+   - No rebuild required
+
+### Modifying Configuration
+
+Both configuration files use standard YAML format and can be edited with any text editor:
+
+```bash
+# Edit network settings
+vi config/network_config.yaml
+
+# Edit resource limits
+vi config/docker-resources.yaml
+
+# Restart to apply changes
+docker restart <container-id>
+# OR
+./start-kath.sh
+```
 
 ## Quick Start
 
@@ -128,6 +183,69 @@ redis:
 - `REDIS_PORT`
 - `REDIS_DB`
 
+### Docker Resource Configuration
+
+Resource limits are defined in `config/docker-resources.yaml` to prevent system
+freezing when processing large genetic datasets.
+
+```yaml
+docker:
+  memory: "4g"              # Memory limit (k, m, g suffixes)
+  memory_swap: "4g"         # Memory-swap limit (prevents disk swap usage)
+  cpus: "4"                 # CPU limit (number of CPUs)
+  cpu_shares: "1024"        # CPU shares (relative weight)
+
+tools:
+  cadd:
+    max_workers: "4"        # Parallel worker processes for CADD
+    chunk_size: "2000"      # Rows per processing chunk
+
+  spliceai:
+    max_workers: "2"
+    chunk_size: "1000"
+
+  clinvar:
+    max_workers: "2"
+    chunk_size: "500"
+
+monitoring:
+  enable_monitoring: true
+  memory_warning_threshold: "80"    # % of limit
+  memory_critical_threshold: "95"   # % of limit
+  auto_pause_on_critical: true      # Pause processing if critical
+
+performance:
+  io_threads: "4"
+  db_pool_size: "10"
+  enable_caching: true
+  cache_limit_mb: "500"
+```
+
+**Tuning Guidelines:**
+
+- Adjust `docker.memory` and `docker.cpus` based on available system resources
+- Leave at least 2GB free for the host system
+- For genetic data: 4GB handles ~50K variants, 8GB handles ~500K variants
+- `cadd.max_workers` should not exceed CPU count
+- Lower `chunk_size` reduces memory but processes slower
+- Monitor actual usage and adjust accordingly
+
+**Example: High-Performance Configuration**
+
+For systems with more resources:
+
+```yaml
+docker:
+  memory: "16g"
+  memory_swap: "16g"
+  cpus: "8"
+
+tools:
+  cadd:
+    max_workers: "8"
+    chunk_size: "5000"
+```
+
 ## Common Use Cases
 
 ### Remote Development Server
@@ -203,7 +321,68 @@ redis:
 
 Run with: `singularity run kath.sif`
 
+### Large Dataset Processing
+
+For processing large genetic datasets (>100K variants), configure resource limits
+in `config/docker-resources.yaml`:
+
+```yaml
+# network_config.yaml
+backend:
+  host: "0.0.0.0"
+  port: 8080
+  domain: "my-analysis-server"
+
+frontend:
+  host: "0.0.0.0"
+  port: 5173
+```
+
+```yaml
+# docker-resources.yaml - High-performance setup
+docker:
+  memory: "16g"       # Increase for large datasets
+  memory_swap: "16g"
+  cpus: "8"
+
+tools:
+  cadd:
+    max_workers: "8"      # Match CPU count for full utilization
+    chunk_size: "5000"    # Larger chunks for faster processing
+
+performance:
+  io_threads: "8"
+  db_pool_size: "20"
+  cache_limit_mb: "2000"  # Increase cache for more variants
+```
+
+This configuration prevents system freezing when processing 500K+ variants.
+
+### Memory-Constrained Systems
+
+For low-resource systems (limited RAM), use conservative settings:
+
+```yaml
+# docker-resources.yaml
+docker:
+  memory: "2g"
+  memory_swap: "2g"
+  cpus: "2"
+
+tools:
+  cadd:
+    max_workers: "2"      # Reduce to prevent memory exhaustion
+    chunk_size: "500"     # Smaller chunks
+
+performance:
+  io_threads: "2"
+  db_pool_size: "5"
+  cache_limit_mb: "100"
+```
+
 ## Modifying Configuration at Runtime
+
+Configuration changes require container restart but **no rebuild**.
 
 ### Docker Compose Setup
 
@@ -211,23 +390,35 @@ Run with: `singularity run kath.sif`
 # 1. Stop the container
 docker-compose down
 
-# 2. Edit configuration
-vi config/network_config.yaml
+# 2. Edit configuration (network or resources)
+vi config/network_config.yaml    # Network settings
+vi config/docker-resources.yaml  # Resource limits and tool parameters
 
 # 3. Restart
 docker-compose up -d
 ```
 
-**No rebuild required!** The container will reload the configuration automatically.
-
 ### Docker Container Restart
 
 ```bash
-# Update the mounted config file
-vi config/network_config.yaml
+# Update mounted config files (no rebuild needed)
+vi config/network_config.yaml    # Network configuration
+vi config/docker-resources.yaml  # Resource limits
 
 # Restart the container
 docker restart <container-id>
+```
+
+### Using start-kath.sh Script
+
+The `start-kath.sh` script automatically loads resource limits from `config/docker-resources.yaml`:
+
+```bash
+# Edit resource configuration
+vi config/docker-resources.yaml
+
+# Re-run the script (automatically uses new limits)
+./start-kath.sh
 ```
 
 ### Singularity Instance
@@ -236,8 +427,9 @@ docker restart <container-id>
 # Stop the instance
 singularity instance stop kath
 
-# Update config
+# Update config files
 vi config/network_config.yaml
+vi config/docker-resources.yaml
 
 # Restart the instance
 singularity instance start -B config:/config kath kath.sif

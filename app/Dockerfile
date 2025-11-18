@@ -98,11 +98,11 @@ COPY --link . .
 # Create volume mount points
 VOLUME ["${APP_DIR}/back_end/instance", "${APP_DIR}/back_end/src/workspace"]
 
-# Create and prepare config directory for network configuration
-# The config/network_config.yaml was copied in the COPY --link . . above
+# Create and prepare config directory for all configuration files
+# The config directory (with all YAML files) was copied in the COPY --link . . above
 RUN mkdir -p /config && chmod 777 /config && \
-    if [ -f ./config/network_config.yaml ]; then \
-      cp ./config/network_config.yaml /config/network_config.yaml; \
+    if [ -d ./config ]; then \
+      cp ./config/*.yaml /config/ 2>/dev/null || true; \
     fi
 
 # Expose ports
@@ -112,6 +112,7 @@ EXPOSE 5173 8080
 ENV PYTHONUNBUFFERED=1
 ENV DATABASE_PATH=instance/kath.db
 ENV NETWORK_CONFIG_PATH=/config/network_config.yaml
+ENV RESOURCES_CONFIG_PATH=/config/docker-resources.yaml
 ENV PORT=5173
 ENV DOMAIN=localhost
 
