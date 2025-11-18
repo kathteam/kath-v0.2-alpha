@@ -799,7 +799,7 @@ Not implemented in v0.2-alpha. Planned for v0.3+:
 
 ## Examples
 
-### Complete Workflow: Import → Analyze → Export
+### Complete Workflow: Import  Analyze  Export
 
 ```javascript
 // 1. Import file

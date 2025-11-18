@@ -1,4 +1,4 @@
-import { FileTypes } from '@/types/enums';
+import { FileTypes } from './models/fileModel';
 
 export type FileTreeViewItemProps = {
   fileType?: FileTypes;

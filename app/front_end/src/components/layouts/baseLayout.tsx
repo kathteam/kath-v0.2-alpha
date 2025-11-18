@@ -98,7 +98,7 @@ export const BaseLayout: React.FC<Props> = ({ children }) => {
             color: Colors.secondaryLight,
           }}
         >
-          v0.2.0-alpha {/* TODO: add application context provider to get values of it */}
+          v0.2.1-alpha {/* TODO: add application context provider to get values of it */}
         </Typography>
       </Box>
       <Box

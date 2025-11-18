@@ -26,12 +26,15 @@ Exceptions:
 -----------
 - `SpliceAIError`: Custom exception class for errors related to SpliceAI execution and processing.
 """
+
 import os
 import subprocess
-import pandas as pd
 from datetime import datetime
-from src import env
+from typing import Dict, Optional, Union
 
+import pandas as pd
+
+from src import env
 
 
 class SpliceAIError(Exception):
@@ -66,8 +69,7 @@ def parse_variant(variant_str):
         return None
 
 
-
-def write_vcf(dataframe:pd.DataFrame, output_filename:str)-> str:
+def write_vcf(dataframe: pd.DataFrame, output_filename: str) -> str:
     """
     Writes a VCF (Variant Call Format) file without header
     from the given DataFrame.
@@ -92,14 +94,17 @@ def write_vcf(dataframe:pd.DataFrame, output_filename:str)-> str:
         "##contig=<ID=6,length=171115067>\n"
         "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
     )
-    with open(output_filename, 'w') as f:
+    with open(output_filename, "w") as f:
         f.write(header)
         variant_columns = ["gen_pos"]
         for row in dataframe.itertuples(index=False):
             variant_value = next(
-                (getattr(row, col) for col in variant_columns if hasattr(row, col)
-                 and pd.notna(getattr(row, col)) and getattr(row, col) != "?"),
-                None
+                (
+                    getattr(row, col)
+                    for col in variant_columns
+                    if hasattr(row, col) and pd.notna(getattr(row, col)) and getattr(row, col) != "?"
+                ),
+                None,
             )
             if variant_value:
                 parsed_variant = parse_variant(variant_value)
@@ -107,7 +112,6 @@ def write_vcf(dataframe:pd.DataFrame, output_filename:str)-> str:
                     chrom, pos, ref, alt = parsed_variant
                     f.write(f"{chrom}\t{pos}\t.\t{ref}\t{alt}\t.\t.\t.\n")
     return output_filename
-
 
 
 def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, annotation="grch38"):
@@ -148,11 +152,16 @@ def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, annotation="grch38"
 
     spliceai_command = [
         "spliceai",
-        "-I", input_vcf,
-        "-O", ouput_vcf,
-        "-R", fasta,
-        "-A", annotation,
-        "-D", "500",
+        "-I",
+        input_vcf,
+        "-O",
+        ouput_vcf,
+        "-R",
+        fasta,
+        "-A",
+        annotation,
+        "-D",
+        "500",
     ]
 
     if env.get_use_cuda():
@@ -166,7 +175,7 @@ def run_spliceai(input_vcf: str, ouput_vcf: str, fasta: str, annotation="grch38"
         raise SpliceAIError(f"Error running SpliceAI: {exc}") from exc
 
 
-def parse_spliceai_vcf(vcf_file: str)->dict:
+def parse_spliceai_vcf(vcf_file: str) -> Dict[str, Dict[str, Union[float, int, None]]]:
     """
     Parses a VCF file to extract SpliceAI scores and maps them to genomic variants.
 
@@ -183,16 +192,16 @@ def parse_spliceai_vcf(vcf_file: str)->dict:
     """
     spliceai_scores = {}
     try:
-        with open(vcf_file, 'r', encoding='utf-8') as vcf:
+        with open(vcf_file, "r", encoding="utf-8") as vcf:
             for line in vcf:
-                if line.startswith('#'):
+                if line.startswith("#"):
                     continue
-                columns = line.strip().split('\t')
+                columns = line.strip().split("\t")
                 chrom, pos, ref, alt = columns[0], columns[1], columns[3], columns[4]
                 variant_key = f"{chrom}-{pos}-{ref}-{alt}"
                 info_field = columns[7]
                 info_parts = info_field.split(";")
-                scores = {}
+                scores: Dict[str, Union[float, int, None]] = {}
                 for part in info_parts:
                     if part.startswith("SpliceAI="):
                         spliceai_values = part.split("=")[1].split("|")
@@ -206,8 +215,12 @@ def parse_spliceai_vcf(vcf_file: str)->dict:
                                 "Delta position (acceptor loss)": int(columns[1]) + int(spliceai_values[7]),
                                 "Delta position (donor gain)": int(columns[1]) + int(spliceai_values[8]),
                                 "Delta position (donor loss)": int(columns[1]) + int(spliceai_values[9]),
-                                "Max_Delta_Score": max(float(spliceai_values[2]), float(spliceai_values[3]),
-                                                        float(spliceai_values[4]), float(spliceai_values[5]))
+                                "Max_Delta_Score": max(
+                                    float(spliceai_values[2]),
+                                    float(spliceai_values[3]),
+                                    float(spliceai_values[4]),
+                                    float(spliceai_values[5]),
+                                ),
                             }
                         else:
                             scores = {
@@ -219,7 +232,7 @@ def parse_spliceai_vcf(vcf_file: str)->dict:
                                 "Delta position (acceptor loss)": None,
                                 "Delta position (donor gain)": None,
                                 "Delta position (donor loss)": None,
-                                "Max_Delta_Score": None
+                                "Max_Delta_Score": None,
                             }
                         spliceai_scores[variant_key] = scores
                         break
@@ -231,15 +244,15 @@ def parse_spliceai_vcf(vcf_file: str)->dict:
 
 
 def is_valid_number(value):
-        """Returns True if the value can be converted to an int or float, else False."""
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
+    """Returns True if the value can be converted to an int or float, else False."""
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
 
 
-def merge_spliceai_scores(data:pd.DataFrame,spliceai_scores:dict)-> pd.DataFrame:
+def merge_spliceai_scores(data: pd.DataFrame, spliceai_scores: dict) -> pd.DataFrame:
     """
     Merges SpliceAI scores into a given DataFrame based on variant values.
 
@@ -255,20 +268,28 @@ def merge_spliceai_scores(data:pd.DataFrame,spliceai_scores:dict)-> pd.DataFrame
     """
     try:
         updated_data = data.copy()
-        spliceai_map = updated_data['gen_pos'].map(spliceai_scores)
-        for key in ["Delta score (acceptor gain)", "Delta score (acceptor loss)",
-                    "Delta score (donor gain)", "Delta score (donor loss)",
-                    "Delta position (acceptor gain)", "Delta position (acceptor loss)",
-                    "Delta position (donor gain)", "Delta position (donor loss)",
-                    "Max_Delta_Score"]:
-            updated_data.loc[:, f"{key}_spliceai"] = spliceai_map.apply(lambda x: x.get(key, None) if isinstance(x, dict) else None)
+        spliceai_map = updated_data["gen_pos"].map(spliceai_scores)
+        for key in [
+            "Delta score (acceptor gain)",
+            "Delta score (acceptor loss)",
+            "Delta score (donor gain)",
+            "Delta score (donor loss)",
+            "Delta position (acceptor gain)",
+            "Delta position (acceptor loss)",
+            "Delta position (donor gain)",
+            "Delta position (donor loss)",
+            "Max_Delta_Score",
+        ]:
+            updated_data.loc[:, f"{key}_spliceai"] = spliceai_map.apply(
+                lambda x: x.get(key, None) if isinstance(x, dict) else None
+            )
         updated_data = updated_data.convert_dtypes()
         return updated_data
     except Exception as e:
         raise SpliceAIError(f"Error merging SpliceAI scores: {e}") from e
 
 
-def add_spliceai_eval_columns(data: pd.DataFrame, fasta_path: str,spliceai_dir:str) -> pd.DataFrame:
+def add_spliceai_eval_columns(data: pd.DataFrame, fasta_path: str, spliceai_dir: str) -> pd.DataFrame:
     """
     Adds SpliceAI evaluation columns to the DataFrame with a `_spliceai` postfix.
 
@@ -287,11 +308,11 @@ def add_spliceai_eval_columns(data: pd.DataFrame, fasta_path: str,spliceai_dir:s
         pd.DataFrame: DataFrame enriched with SpliceAI evaluation columns.
 
     """
-    spliceai_input_vcf=os.path.join(spliceai_dir, "spliceai_input.vcf")
-    spliceai_output_vcf=os.path.join(spliceai_dir, "spliceai_output.vcf")
+    spliceai_input_vcf = os.path.join(spliceai_dir, "spliceai_input.vcf")
+    spliceai_output_vcf = os.path.join(spliceai_dir, "spliceai_output.vcf")
     data_copy = data.copy()
-    input_vcf = write_vcf(data_copy,spliceai_input_vcf)
-    run_spliceai(input_vcf,spliceai_output_vcf, fasta_path)
+    input_vcf = write_vcf(data_copy, spliceai_input_vcf)
+    run_spliceai(input_vcf, spliceai_output_vcf, fasta_path)
     spliceai_scores = parse_spliceai_vcf(spliceai_output_vcf)
 
-    return merge_spliceai_scores(data_copy,spliceai_scores)
+    return merge_spliceai_scores(data_copy, spliceai_scores)

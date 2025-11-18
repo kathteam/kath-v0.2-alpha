@@ -154,38 +154,38 @@ npm run lint
 
 ```
 kath-v0.2-alpha/
-├── app/
-│   ├── back_end/              # Python Flask backend
-│   │   ├── src/               # Application source code
-│   │   │   ├── routes/        # API endpoints
-│   │   │   ├── tools/         # DNA analysis tools
-│   │   │   ├── data/          # Data processing
-│   │   │   ├── utils/         # Utilities
-│   │   │   └── setup/         # App initialization
-│   │   ├── tests/             # Backend tests
-│   │   ├── run.py             # Application entry point
-│   │   └── requirements.txt   # Python dependencies
-│   │
-│   ├── front_end/             # React TypeScript frontend
-│   │   ├── src/
-│   │   │   ├── app/           # App-level components
-│   │   │   ├── features/      # Feature modules (editor)
-│   │   │   ├── components/    # Shared components
-│   │   │   ├── stores/        # Context providers
-│   │   │   ├── hooks/         # Custom hooks
-│   │   │   ├── lib/           # Library configs
-│   │   │   └── types/         # TypeScript types
-│   │   ├── package.json       # Node dependencies
-│   │   └── vite.config.ts     # Vite configuration
-│   │
-│   ├── Dockerfile.final       # Production Docker image
-│   └── run.sh                 # Container entry point
-│
-├── docs/                      # Documentation
-├── start-kath.sh              # Mac/Linux launcher
-├── start-kath.bat             # Windows launcher
-├── HOW_TO_RUN.md             # User guide
-└── REFACTORING_PLAN.md       # Development roadmap
+ app/
+    back_end/              # Python Flask backend
+       src/               # Application source code
+          routes/        # API endpoints
+          tools/         # DNA analysis tools
+          data/          # Data processing
+          utils/         # Utilities
+          setup/         # App initialization
+       tests/             # Backend tests
+       run.py             # Application entry point
+       requirements.txt   # Python dependencies
+   
+    front_end/             # React TypeScript frontend
+       src/
+          app/           # App-level components
+          features/      # Feature modules (editor)
+          components/    # Shared components
+          stores/        # Context providers
+          hooks/         # Custom hooks
+          lib/           # Library configs
+          types/         # TypeScript types
+       package.json       # Node dependencies
+       vite.config.ts     # Vite configuration
+   
+    Dockerfile.final       # Production Docker image
+    run.sh                 # Container entry point
+
+ docs/                      # Documentation
+ start-kath.sh              # Mac/Linux launcher
+ start-kath.bat             # Windows launcher
+ HOW_TO_RUN.md             # User guide
+ REFACTORING_PLAN.md       # Development roadmap
 ```
 
 ## Development Workflow

@@ -1,6 +1,7 @@
 import { Dialog, styled } from '@mui/material';
+import type { DialogProps } from '@mui/material';
 
-export const FileTreeItemContextMenuStyledDialog = styled(Dialog)(({ theme }) => ({
+export const FileTreeItemContextMenuStyledDialog: React.ComponentType<DialogProps> = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogActions-root': {
     padding: '1.5rem',
   },

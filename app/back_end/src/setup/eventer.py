@@ -17,7 +17,7 @@ Functions:
         connection.
     - "disconnect": Called when a user disconnects. It removes the user's session and logs the
         disconnection.
-  
+
 Details:
 - `handle_connect`: Handles the connection event by extracting the UUID from the request,
     registering the user session with `socket_manager`, and logging the event.
@@ -32,10 +32,10 @@ Logging:
 # pylint: disable=import-error
 
 from flask import request
-from ..setup.extensions import socketio, logger, socket_manager
 
 # Import all event modules here
 from ..events.workspace_export_event import workspace_export_event_handler
+from ..setup.extensions import logger, socket_manager, socketio
 
 
 def eventer():

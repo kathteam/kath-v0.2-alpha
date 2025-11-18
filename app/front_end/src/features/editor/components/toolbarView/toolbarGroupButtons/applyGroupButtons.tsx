@@ -19,7 +19,6 @@ export const ApplyGroupButtons: React.FC<ApplyGroupButtonsProps> = () => {
     override,
     applyTo,
     applyErrorStateUpdate,
-    saveToStateUpdate,
     openAfterSave,
     gene,
   } = useToolbarContext();

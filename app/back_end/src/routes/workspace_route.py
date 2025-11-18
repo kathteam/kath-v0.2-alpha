@@ -42,7 +42,7 @@ Endpoints:
    - **Description**: Retrieves a specific file from the user's workspace directory. Supports
     pagination for large files.
    - **Headers**: Requires `uuid` and `sid` headers.
-   - **Query Parameters**: 
+   - **Query Parameters**:
      - `page` (int): Page number of data to retrieve (default is 0).
      - `rowsPerPage` (int): Number of rows per page (default is 100).
    - **Returns**:
@@ -74,39 +74,129 @@ Errors and Feedback:
 - Errors include detailed logging and console feedback for issues such as missing files, permission
     errors, and unexpected exceptions.
 """
+
 # pylint: disable=too-many-lines
 
+import csv
 import json
 import os
 import shutil
-import csv
 from ast import literal_eval
-from flask import Blueprint, request, jsonify
 
-from ..setup.extensions import (compress, logger)
+from flask import Blueprint, jsonify, request
+
+from ..constants import (
+    CONSOLE_FEEDBACK_EVENT,
+    WORKSPACE_CREATE_ROUTE,
+    WORKSPACE_DELETE_ROUTE,
+    WORKSPACE_DIR,
+    WORKSPACE_FILE_ROUTE,
+    WORKSPACE_FILE_SAVE_FEEDBACK_EVENT,
+    WORKSPACE_RENAME_ROUTE,
+    WORKSPACE_ROUTE,
+    WORKSPACE_TEMPLATE_DIR,
+    WORKSPACE_UPDATE_FEEDBACK_EVENT,
+)
+from ..services import WorkspaceService
+from ..settings import get_settings
+from ..setup.extensions import compress, logger
+from ..utils.exceptions import UnexpectedError
 from ..utils.helpers import (
-    socketio_emit_to_user_session,
     build_workspace_structure,
-    is_number,
     convert_to_number,
     generate_filter_suffix,
     generate_sort_suffix,
-)
-from ..utils.exceptions import UnexpectedError
-from ..constants import (
-    WORKSPACE_DIR,
-    WORKSPACE_TEMPLATE_DIR,
-    WORKSPACE_ROUTE,
-    WORKSPACE_FILE_ROUTE,
-    WORKSPACE_CREATE_ROUTE,
-    WORKSPACE_RENAME_ROUTE,
-    WORKSPACE_DELETE_ROUTE,
-    WORKSPACE_UPDATE_FEEDBACK_EVENT,
-    CONSOLE_FEEDBACK_EVENT,
-    WORKSPACE_FILE_SAVE_FEEDBACK_EVENT,
+    is_number,
+    socketio_emit_to_user_session,
 )
 
 workspace_route_bp = Blueprint("workspace_route", __name__)
+
+# Initialize workspace service
+workspace_service = WorkspaceService()
+
+
+def _get_file_from_database(uuid, sid, relative_path, page, rows_per_page, filters, sorts):
+    """
+    Retrieve file data from database with enhanced pagination metadata.
+
+    Args:
+        uuid: Workspace UUID
+        sid: Session ID
+        relative_path: File path
+        page: Page number (0-indexed)
+        rows_per_page: Rows per page
+        filters: Filter dictionary
+        sorts: Sort dictionary
+
+    Returns:
+        JSON response with pagination metadata or error
+    """
+    try:
+        # Get file data from database
+        header, rows, total_rows = workspace_service.get_file_data(
+            workspace_id=uuid,
+            file_path=relative_path,
+            page=page,
+            rows_per_page=rows_per_page,
+            filters=filters,
+            sorts=sorts,
+        )
+
+        # Calculate pagination metadata
+        total_pages = (total_rows + rows_per_page - 1) // rows_per_page
+        showing_from = (page * rows_per_page) + 1 if total_rows > 0 else 0
+        showing_to = min((page + 1) * rows_per_page, total_rows)
+
+        # Build response with enhanced pagination metadata
+        response_data = {
+            "page": page,
+            "totalRows": total_rows,
+            "header": header,
+            "rows": rows,
+            "pagination": {
+                "current_page": page,
+                "page_size": rows_per_page,
+                "total_entries": total_rows,
+                "total_pages": total_pages,
+                "has_previous": page > 0,
+                "has_next": page < total_pages - 1,
+                "showing_from": showing_from,
+                "showing_to": showing_to,
+            },
+        }
+
+        # Emit success feedback
+        socketio_emit_to_user_session(
+            CONSOLE_FEEDBACK_EVENT,
+            {
+                "type": "succ",
+                "message": f"File at '{relative_path}' retrieved successfully (from database).",
+            },
+            uuid,
+            sid,
+        )
+
+        return jsonify(response_data)
+
+    except FileNotFoundError as e:
+        logger.error("File not found in database: %s", e)
+        socketio_emit_to_user_session(
+            CONSOLE_FEEDBACK_EVENT,
+            {"type": "errr", "message": f"File not found in database: {e}"},
+            uuid,
+            sid,
+        )
+        return jsonify({"error": str(e)}), 404
+    except Exception as e:
+        logger.error("Error retrieving file from database: %s", e)
+        socketio_emit_to_user_session(
+            CONSOLE_FEEDBACK_EVENT,
+            {"type": "errr", "message": f"Database error: {e}"},
+            uuid,
+            sid,
+        )
+        return jsonify({"error": "Internal error"}), 500
 
 
 @workspace_route_bp.route(WORKSPACE_ROUTE, methods=["GET"])
@@ -147,7 +237,6 @@ def get_workspace():
                 directory.
             - Other exceptions: Logs and reports unexpected errors.
     """
-
     uuid = request.headers.get("uuid")
     sid = request.headers.get("sid")
 
@@ -179,7 +268,12 @@ def get_workspace():
         workspace_structure = [
             child_structure
             for child in os.listdir(user_workspace_dir)
-            if (child_structure := build_workspace_structure(os.path.join(user_workspace_dir, child), user_workspace_dir)) is not None
+            if (
+                child_structure := build_workspace_structure(
+                    os.path.join(user_workspace_dir, child), user_workspace_dir
+                )
+            )
+            is not None
         ]
 
         # Emit a feedback to the user's console
@@ -277,7 +371,6 @@ def get_workspace_file(relative_path):
         - Unexpected errors are logged, reported to the user's console, and result in a `500
             Internal Server Error` response.
     """
-
     uuid = request.headers.get("uuid")
     sid = request.headers.get("sid")
 
@@ -302,14 +395,23 @@ def get_workspace_file(relative_path):
 
     page = int(request.args.get("page", 0))
     total_rows = 0
-    header = "" 
-    paginated_rows = []
+    header: list[str] = []
+    paginated_rows: list[list[str]] = []
     rows_per_page = int(request.args.get("rowsPerPage", 100))
     start_row = page * rows_per_page
     end_row = start_row + rows_per_page
 
-    sort = literal_eval(request.args.get("sorts"))
-    filter = literal_eval(request.args.get("filters"))
+    # Fix: Handle None values for sorts and filters parameters
+    sorts_param = request.args.get("sorts")
+    filters_param = request.args.get("filters")
+    sort = literal_eval(sorts_param) if sorts_param else {}
+    filter = literal_eval(filters_param) if filters_param else {}
+
+    # Check if database backend is enabled
+    settings = get_settings()
+    if settings.use_database_backend:
+        logger.info("Using database backend for file: %s", relative_path)
+        return _get_file_from_database(uuid, sid, relative_path, page, rows_per_page, filter, sort)
 
     try:
         # Ensure the user specific directory exists
@@ -319,10 +421,8 @@ def get_workspace_file(relative_path):
 
         # Check if file is empty
         if os.path.getsize(file_path) == 0:
-            return jsonify(
-                {"page": page, "totalRows": total_rows, "header": header, "rows": paginated_rows}
-            )
-        
+            return jsonify({"page": page, "totalRows": total_rows, "header": header, "rows": paginated_rows})
+
         file_path_index = f"{file_path}.index"
 
         if filter:
@@ -370,17 +470,15 @@ def get_workspace_file(relative_path):
         #                 if i >= end_row:
         #                     break
 
-        with open(
-            file_path, "r", encoding="utf-8"
-        ) as original:
- 
+        with open(file_path, "r", encoding="utf-8") as original:
+
             # Original file reader
             reader = csv.reader(original)
 
             # Read all rows
             for idx, row in enumerate(reader):
                 # Header
-                if (idx == 0):
+                if idx == 0:
                     header = row
                     continue
 
@@ -425,7 +523,7 @@ def get_workspace_file(relative_path):
             first_valid_value = next((row[filter_index] for row in rows if row[filter_index]), None)
             if first_valid_value and is_number(first_valid_value):
                 # Sort numerically
-                rows, indexes = zip(
+                rows_tuple, indexes_tuple = zip(
                     *sorted(
                         zip(rows, indexes),
                         key=lambda pair: (
@@ -436,9 +534,11 @@ def get_workspace_file(relative_path):
                         reverse=reverse_sort,
                     )
                 )
+                rows = list(rows_tuple)
+                indexes = list(indexes_tuple)
             else:
                 # Sort alphabetically (string sort)
-                rows, indexes = zip(
+                rows_tuple, indexes_tuple = zip(
                     *sorted(
                         zip(rows, indexes),  # Combine rows and their original indexes
                         key=lambda pair: (
@@ -449,6 +549,8 @@ def get_workspace_file(relative_path):
                         reverse=reverse_sort,
                     )
                 )
+                rows = list(rows_tuple)
+                indexes = list(indexes_tuple)
 
             rows = list(rows)
             indexes = list(indexes)
@@ -464,13 +566,11 @@ def get_workspace_file(relative_path):
 
             if i >= end_row:
                 break
-        
+
         # Index file
-        sorted_indexes = sorted(enumerate(sorted_indexes), key=lambda x: x[1])
-        with open(
-            file_path_index, "w", encoding="utf-8"
-        ) as index:
-            for idx, value in sorted_indexes:
+        enumerated_indexes = sorted(enumerate(sorted_indexes), key=lambda x: x[1])
+        with open(file_path_index, "w", encoding="utf-8") as index:
+            for idx, value in enumerated_indexes:
                 index.write(f"{value} {idx + 1}\n")
 
         # Build the response data
@@ -540,7 +640,7 @@ def get_workspace_file(relative_path):
 @compress.compressed()
 def put_workspace_file(relative_path):
     """
-    Handles a PUT request to save or update a workspace file for a specific user.
+    Handle a PUT request to save or update a workspace file for a specific user.
 
     This function processes a request to save or update a file in the user's workspace directory.
     It validates the presence of required headers (UUID and SID), processes the provided data, and
@@ -575,7 +675,6 @@ def put_workspace_file(relative_path):
         404: Not Found - Requested file not found.
         500: Internal Server Error - An unexpected error occurred.
     """
-
     uuid = request.headers.get("uuid")
     sid = request.headers.get("sid")
 
@@ -604,8 +703,6 @@ def put_workspace_file(relative_path):
     header = data.get("header")
     rows = data.get("rows")
 
-    start_row = page * rows_per_page
-    end_row = start_row + rows_per_page
     total_rows = 0
 
     try:
@@ -624,13 +721,11 @@ def put_workspace_file(relative_path):
         temp_file_path = f"{file_path}.tmp"
 
         # Read the file and write the updated rows
-        with open(
-            file_path, "r", encoding="utf-8"
-        ) as original, open(
-            file_path_index, "r", encoding="utf-8"
-        ) as index, open(
-            temp_file_path, "w", encoding="utf-8"
-        ) as outfile:
+        with (
+            open(file_path, "r", encoding="utf-8") as original,
+            open(file_path_index, "r", encoding="utf-8") as index,
+            open(temp_file_path, "w", encoding="utf-8") as outfile,
+        ):
 
             # Original file reader
             reader = csv.reader(original)
@@ -638,7 +733,7 @@ def put_workspace_file(relative_path):
             writer = csv.writer(outfile)
             # Index file context
             line = index.readline()
-            if line != '':
+            if line != "":
                 org_line, rows_line = map(int, line.split(" "))
             else:
                 org_line = 0
@@ -647,22 +742,22 @@ def put_workspace_file(relative_path):
             # Read all original rows
             for idx, row in enumerate(reader):
                 # Header
-                if (idx == 0):
+                if idx == 0:
                     writer.writerow(header)
                     continue
 
                 # Write new content
-                if (idx == org_line):
-                    writer.writerow(rows[rows_line-1])
+                if idx == org_line:
+                    writer.writerow(rows[rows_line - 1])
                     line = index.readline()
-                    if line != '':
+                    if line != "":
                         org_line, rows_line = map(int, line.split(" "))
                     else:
                         org_line = 0
                         rows_line = 0
                     continue
 
-                # Write old content 
+                # Write old content
                 writer.writerow(row)
 
         # Replace the old file with the new file
@@ -761,7 +856,7 @@ def put_workspace_file(relative_path):
 @compress.compressed()
 def put_workspace_create(relative_path=None):
     """
-    Creates a new file or directory in the user's workspace.
+    Create a new file or directory in the user's workspace.
 
     This endpoint handles:
     - PUT `/workspace/create/<path:relative_path>`: Create at a specified `relative_path`.
@@ -808,7 +903,6 @@ def put_workspace_create(relative_path=None):
     }
     ```
     """
-
     uuid = request.headers.get("uuid")
     sid = request.headers.get("sid")
 
@@ -923,7 +1017,7 @@ def put_workspace_create(relative_path=None):
 @compress.compressed()
 def put_workspace_rename(relative_path):
     """
-    Renames a file or directory in the user's workspace.
+    Rename a file or directory in the user's workspace.
 
     - PUT `/workspace/rename/<path:relative_path>`: Rename the item at `relative_path`.
 
@@ -968,7 +1062,6 @@ def put_workspace_rename(relative_path):
     }
     ```
     """
-
     uuid = request.headers.get("uuid")
     sid = request.headers.get("sid")
 
@@ -1042,11 +1135,7 @@ def put_workspace_rename(relative_path):
 
         # Build the response data
         response_data = {
-            "newId": (
-                f"{os.path.dirname(relative_path)}/{label}"
-                if os.path.dirname(relative_path)
-                else label
-            ),
+            "newId": (f"{os.path.dirname(relative_path)}/{label}" if os.path.dirname(relative_path) else label),
             "newLabel": label,
             "newType": file_type,
         }
@@ -1098,7 +1187,7 @@ def put_workspace_rename(relative_path):
 @compress.compressed()
 def put_workspace_delete(relative_path):
     """
-    Deletes a file or directory from the user's workspace.
+    Delete a file or directory from the user's workspace.
 
     - PUT `/workspace/delete/<path:relative_path>`: Deletes the item at `relative_path`.
 
@@ -1139,7 +1228,6 @@ def put_workspace_delete(relative_path):
     }
     ```
     """
-
     uuid = request.headers.get("uuid")
     sid = request.headers.get("sid")
 

@@ -158,10 +158,7 @@ class SocketManager:
         """
         keys = self.redis.keys(f"{self._get_redis_key()}:*")
         return {
-            key.decode("utf-8").split(":")[1]: [
-                sid.decode("utf-8") for sid in self.redis.smembers(key)
-            ]
-            for key in keys
+            key.decode("utf-8").split(":")[1]: [sid.decode("utf-8") for sid in self.redis.smembers(key)] for key in keys
         }
 
     def remove_all_sessions(self):

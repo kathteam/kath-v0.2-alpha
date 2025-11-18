@@ -1,0 +1,90 @@
+# Pre-commit hooks for KATH project
+# Install: pip install pre-commit
+# Setup: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+
+  # Python: Black formatter
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+        language_version: python3.12
+        files: ^app/back_end/
+        args: ['--config', 'app/back_end/pyproject.toml']
+
+  # Python: isort import sorting
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        files: ^app/back_end/
+        args: ['--settings-path', 'app/back_end/pyproject.toml']
+
+  # Python: flake8 linting
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        files: ^app/back_end/
+        args: ['--config', 'app/back_end/.flake8']
+        additional_dependencies: [flake8-docstrings]
+
+  # Python: mypy type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        files: ^app/back_end/src/
+        args: ['--config-file', 'app/back_end/pyproject.toml']
+        additional_dependencies:
+          - pydantic>=2.10.0
+          - pydantic-settings>=2.6.0
+          - types-redis
+          - types-requests
+
+  # Frontend: ESLint
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.15.0
+    hooks:
+      - id: eslint
+        files: ^app/front_end/src/.*\.[jt]sx?$
+        types: [file]
+        args: ['--config', 'app/front_end/.eslintrc.cjs', '--fix']
+        additional_dependencies:
+          - eslint@8.57.1
+          - '@typescript-eslint/eslint-plugin@7.18.0'
+          - '@typescript-eslint/parser@7.18.0'
+          - eslint-plugin-react@7.37.1
+          - eslint-plugin-react-hooks@4.6.2
+
+  # Frontend: Prettier
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        files: ^app/front_end/.*\.(ts|tsx|js|jsx|json|css|md)$
+        args: ['--config', 'app/front_end/.prettierrc.cjs', '--write']
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix']

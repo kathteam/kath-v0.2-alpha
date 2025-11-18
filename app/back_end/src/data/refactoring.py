@@ -1,18 +1,16 @@
 """ Module dedicated for refactoring collected data for further processing """
 
-import os
 import logging
+import os
 import re
-
-
-import pandas as pd
 import xml.etree.ElementTree as ET
-from pandas import DataFrame
 from datetime import datetime
 
+import pandas as pd
+from pandas import DataFrame
 from pyliftover import LiftOver
 
-from .constants import LOVD_PATH, GNOMAD_PATH, CLINVAR_PATH
+from .constants import CLINVAR_PATH, GNOMAD_PATH, LOVD_PATH
 
 
 def set_lovd_dtypes(df_dict: dict[str, pd.DataFrame]):
@@ -29,7 +27,8 @@ def set_lovd_dtypes(df_dict: dict[str, pd.DataFrame]):
             raise Exception(f"Failed to convert data types for LOVD table '{table_name}': {e}") from e
         df_dict[table_name] = frame
 
-def set_gnomad_dtypes(df:pd.DataFrame):
+
+def set_gnomad_dtypes(df: pd.DataFrame):
     """
     Convert data from gnomAD format table to desired data format based on specified data types.
 
@@ -42,7 +41,7 @@ def set_gnomad_dtypes(df:pd.DataFrame):
         raise Exception(f"Failed to convert gnomAD data types: {e}") from e
 
 
-def set_clinvar_dtypes(df:pd.DataFrame):
+def set_clinvar_dtypes(df: pd.DataFrame):
     """
     Convert data from ClinVar format table to desired data format based on specified data types.
 
@@ -55,7 +54,7 @@ def set_clinvar_dtypes(df:pd.DataFrame):
         raise Exception(f"Failed to convert Clinvar data types: {e}") from e
 
 
-def set_custom_file_dtypes(df:pd.DataFrame):
+def set_custom_file_dtypes(df: pd.DataFrame):
     """
     Convert data from custom_file format table to desired data format based on specified data types.
 
@@ -68,20 +67,20 @@ def set_custom_file_dtypes(df:pd.DataFrame):
         raise Exception(f"Failed to convert custom_file data types: {e}") from e
 
 
-def infer_type(value:str):
+def infer_type(value: str):
     """
-    Infer the type of given value based on its content.
-   This function attempts to convert the input value into an
-   integer or a float based on its string representation. If the
-   conversion is not possible, it returns the original value as a
-   string.
-    Args:
-        value: The value to infer the type for, expected to be a string.
+     Infer the type of given value based on its content.
+    This function attempts to convert the input value into an
+    integer or a float based on its string representation. If the
+    conversion is not possible, it returns the original value as a
+    string.
+     Args:
+         value: The value to infer the type for, expected to be a string.
 
-    Returns: The value converted to int, float, or string based on the inferred type.
+     Returns: The value converted to int, float, or string based on the inferred type.
     """
     try:
-        if '.' in value or 'E-' in value or 'E+' in value:
+        if "." in value or "E-" in value or "E+" in value:
             return float(value)
         else:
             return int(value)
@@ -89,7 +88,7 @@ def infer_type(value:str):
         return value  # Return as string if it cannot be converted
 
 
-def parse_lovd(path: str = LOVD_PATH + '/lovd_data.txt', save_to: str = LOVD_PATH):
+def parse_lovd(path: str = LOVD_PATH + "/lovd_data.txt", save_to: str = LOVD_PATH):
     """
     Converts data from text file with LOVD format to dictionary of tables.
 
@@ -119,7 +118,7 @@ def parse_lovd(path: str = LOVD_PATH + '/lovd_data.txt', save_to: str = LOVD_PAT
         while True:
             line = f.readline()
 
-            if line == '':
+            if line == "":
                 break
 
             table_name = line.split("##")[1].strip()
@@ -137,11 +136,11 @@ def parse_lovd(path: str = LOVD_PATH + '/lovd_data.txt', save_to: str = LOVD_PAT
             if notes:
                 logging.info("[%s]%s", table_name, notes)
 
-            table_header = [column[3:-3] for column in line[:-1].split('\t')]
+            table_header = [column[3:-3] for column in line[:-1].split("\t")]
             frame = DataFrame([], columns=table_header)
             line = f.readline()
-            while line != '\n':
-                variables = [variable[1:-1] for variable in line[:-1].split('\t')]
+            while line != "\n":
+                variables = [variable[1:-1] for variable in line[:-1].split("\t")]
                 observation = DataFrame([variables], columns=table_header)
                 frame = pd.concat([frame, observation], ignore_index=True)
                 line = f.readline()
@@ -162,7 +161,7 @@ def parse_lovd(path: str = LOVD_PATH + '/lovd_data.txt', save_to: str = LOVD_PAT
     return d
 
 
-def parse_gnomad(path:str=GNOMAD_PATH + '/gnomad_data.csv'):
+def parse_gnomad(path: str = GNOMAD_PATH + "/gnomad_data.csv"):
     """
     Parses data from a gnomAD format text file into a pandas DataFrame.
 
@@ -176,7 +175,7 @@ def parse_gnomad(path:str=GNOMAD_PATH + '/gnomad_data.csv'):
         raise FileNotFoundError(f"The file at {path} does not exist.")
     logging.info("Parsing file %s using parse_gnomad.", path)
     try:
-        gnomad_data = pd.read_csv(path, sep=',', encoding='UTF-8')
+        gnomad_data = pd.read_csv(path, sep=",", encoding="UTF-8")
         return gnomad_data
     except Exception as e:
         logging.error("Error parsing gnomAD data: %s", str(e))
@@ -200,7 +199,7 @@ def parse_custom_file(path: str):
         if path.endswith(".xlsx") or path.endswith(".xls"):
             data = pd.read_excel(path, engine="openpyxl")
         elif path.endswith(".csv"):
-            data = pd.read_csv(path, sep=',', encoding='UTF-8')
+            data = pd.read_csv(path, sep=",", encoding="UTF-8")
         else:
             raise ValueError("Unsupported file format. Only .csv and .xlsx files are allowed.")
         return data
@@ -209,7 +208,7 @@ def parse_custom_file(path: str):
         raise e
 
 
-def clinvar_file_parse(path:str=CLINVAR_PATH + '/clinvar_data.csv'):
+def clinvar_file_parse(path: str = CLINVAR_PATH + "/clinvar_data.csv"):
     """
     Parses data from a ClinVar format text file into a pandas DataFrame.
 
@@ -222,14 +221,14 @@ def clinvar_file_parse(path:str=CLINVAR_PATH + '/clinvar_data.csv'):
         raise FileNotFoundError(f"The file at {path} does not exist.")
     logging.info("Parsing file %s using parse_clinvar.", path)
     try:
-        clinvar_data = pd.read_csv(path, sep=',', encoding='UTF-8')
+        clinvar_data = pd.read_csv(path, sep=",", encoding="UTF-8")
         return clinvar_data
     except Exception as e:
         logging.error("Error parsing ClinVar data: %s", str(e))
         raise e
 
 
-def from_clinvar_name_to_cdna_position(name:str):
+def from_clinvar_name_to_cdna_position(name: str):
     """
     Custom cleaner to extract cDNA position from Clinvar `name` variable.
 
@@ -239,10 +238,10 @@ def from_clinvar_name_to_cdna_position(name:str):
     """
 
     start = name.find(":") + 1
-    ends = {'del', 'delins', 'dup', 'ins', 'inv', 'subst'}
+    ends = {"del", "delins", "dup", "ins", "inv", "subst"}
 
     if "p." in name:
-        name = name[:name.index("p.") - 1].strip()
+        name = name[: name.index("p.") - 1].strip()
 
     end = len(name)
 
@@ -269,15 +268,15 @@ def lovd_fill_hg38(lovd: pd.DataFrame):
 
     if lovd.empty:
         return
-    lovd.loc[:,'hg38_gnomad_format'] = lovd.loc[:,'VariantOnGenome/DNA/hg38'].replace('', pd.NA)
-    missing_hg38_mask = lovd.loc[:,'hg38_gnomad_format'].isna()
-    lovd.loc[missing_hg38_mask, 'hg38_gnomad_format'] = (lovd.loc[missing_hg38_mask,
-                                                                'VariantOnGenome/DNA'].
-                                                         apply(convert_hg19_if_missing))
-    lovd.loc[:,'hg38_gnomad_format'] = lovd.loc[:,'hg38_gnomad_format'].apply(convert_to_gnomad_gen)
+    lovd.loc[:, "hg38_gnomad_format"] = lovd.loc[:, "VariantOnGenome/DNA/hg38"].replace("", pd.NA)
+    missing_hg38_mask = lovd.loc[:, "hg38_gnomad_format"].isna()
+    lovd.loc[missing_hg38_mask, "hg38_gnomad_format"] = lovd.loc[missing_hg38_mask, "VariantOnGenome/DNA"].apply(
+        convert_hg19_if_missing
+    )
+    lovd.loc[:, "hg38_gnomad_format"] = lovd.loc[:, "hg38_gnomad_format"].apply(convert_to_gnomad_gen)
 
 
-def convert_hg19_if_missing(hg19: str, lo = LiftOver('hg19', 'hg38')):
+def convert_hg19_if_missing(hg19: str, lo=LiftOver("hg19", "hg38")):
     """
     Converts hg19 variant to hg38 if hg38 is missing.
     :param hg19: a row from the DataFrame.
@@ -285,17 +284,16 @@ def convert_hg19_if_missing(hg19: str, lo = LiftOver('hg19', 'hg38')):
     :return: hg38 value or a conversion of the hg19 value in the format 'g.positionref>alt'.
     """
 
-    if pd.isna(hg19) or '_' in hg19:
+    if pd.isna(hg19) or "_" in hg19:
         return "?"
 
-    match = re.search(r'g\.(\d+)', hg19)
+    match = re.search(r"g\.(\d+)", hg19)
     if not match:
-        return '?'
+        return "?"
 
     position_str = match.group(1)
-    new_pos = lo.convert_coordinate('chr6', int(position_str))[0][1]
+    new_pos = lo.convert_coordinate("chr6", int(position_str))[0][1]
     return f"g.{new_pos}{hg19[-3:]}"
-
 
 
 def convert_to_gnomad_gen(variant: str):
@@ -308,22 +306,22 @@ def convert_to_gnomad_gen(variant: str):
     """
 
     patterns = {
-        'dup': re.compile(r'^g\.(\d+)dup$'),
-        'del': re.compile(r'^g\.(\d+)del$'),
-        'ref_alt': re.compile(r'^g\.(\d+)([A-Z])>([A-Z])$')
+        "dup": re.compile(r"^g\.(\d+)dup$"),
+        "del": re.compile(r"^g\.(\d+)del$"),
+        "ref_alt": re.compile(r"^g\.(\d+)([A-Z])>([A-Z])$"),
     }
 
-    match = patterns['dup'].match(variant)
+    match = patterns["dup"].match(variant)
     if match:
         position = match.group(1)
         return f"6-{position}-dup"
 
-    match = patterns['del'].match(variant)
+    match = patterns["del"].match(variant)
     if match:
         position = match.group(1)
         return f"6-{position}-del"
 
-    match = patterns['ref_alt'].match(variant)
+    match = patterns["ref_alt"].match(variant)
     if match:
         position = match.group(1)
         ref = match.group(2)
@@ -333,7 +331,7 @@ def convert_to_gnomad_gen(variant: str):
     return "?"
 
 
-def merge_gnomad_lovd(lovd:pd.DataFrame, gnomad:pd.DataFrame):
+def merge_gnomad_lovd(lovd: pd.DataFrame, gnomad: pd.DataFrame):
     """
     Merge LOVD and gnomAD dataframes on genomic positions.
 
@@ -349,23 +347,14 @@ def merge_gnomad_lovd(lovd:pd.DataFrame, gnomad:pd.DataFrame):
     """
 
     lovd_fill_hg38(lovd)
-    gnomad.columns = [
-        col + '_gnomad' if not col.endswith('_gnomad') else col
-        for col in gnomad.columns
-    ]
+    gnomad.columns = [col + "_gnomad" if not col.endswith("_gnomad") else col for col in gnomad.columns]
 
-    merged_frame = pd.merge(
-        lovd,
-        gnomad,
-        how="left",
-        left_on="hg38_gnomad_format",
-        right_on="variant_id_gnomad"
-    )
+    merged_frame = pd.merge(lovd, gnomad, how="left", left_on="hg38_gnomad_format", right_on="variant_id_gnomad")
 
     return merged_frame
 
 
-def merge_custom_file(custom_data:pd.DataFrame, other_data:pd.DataFrame):
+def merge_custom_file(custom_data: pd.DataFrame, other_data: pd.DataFrame):
     """
     Merge custom data file and dataframes on genomic positions.
 
@@ -381,16 +370,9 @@ def merge_custom_file(custom_data:pd.DataFrame, other_data:pd.DataFrame):
     """
 
     custom_data_fill_hg38(custom_data)
-    custom_data.columns = [
-        col + '_custom' if not col.endswith('_custom') else col
-        for col in custom_data.columns
-    ]
+    custom_data.columns = [col + "_custom" if not col.endswith("_custom") else col for col in custom_data.columns]
     merged_frame = pd.merge(
-        custom_data,
-        other_data,
-        how="outer",
-        left_on="hg38_data_custom",
-        right_on="hg38_gnomad_format"
+        custom_data, other_data, how="outer", left_on="hg38_data_custom", right_on="hg38_gnomad_format"
     )
     return merged_frame
 
@@ -413,16 +395,18 @@ def custom_data_fill_hg38(custom_data: pd.DataFrame):
     if custom_data.empty:
         return
     custom_data["hg38_data"] = (
-        custom_data["Chromosome"].str.replace("chr", "", regex=True) + "-" +
-        custom_data["Position"].astype(str) + "-" +
-        custom_data["REF"] + "-" +
-        custom_data["ALT"]
+        custom_data["Chromosome"].str.replace("chr", "", regex=True)
+        + "-"
+        + custom_data["Position"].astype(str)
+        + "-"
+        + custom_data["REF"]
+        + "-"
+        + custom_data["ALT"]
     )
     return custom_data
 
 
-
-def merge_lovd_clinvar(lovd:pd.DataFrame, clinvar:pd.DataFrame):
+def merge_lovd_clinvar(lovd: pd.DataFrame, clinvar: pd.DataFrame):
     """
     Merge LOVD and clinvar dataframes on genomic positions.
 
@@ -438,34 +422,24 @@ def merge_lovd_clinvar(lovd:pd.DataFrame, clinvar:pd.DataFrame):
     """
 
     lovd_fill_hg38(lovd)
-    clinvar.columns = [
-        col + '_clinvar' if not col.endswith('_clinvar') else col
-        for col in clinvar.columns
-    ]
+    clinvar.columns = [col + "_clinvar" if not col.endswith("_clinvar") else col for col in clinvar.columns]
 
-    merged_frame = pd.merge(
-        lovd,
-        clinvar,
-        how="outer",
-        left_on="hg38_gnomad_format",
-        right_on="hg38_ID_clinvar"
+    merged_frame = pd.merge(lovd, clinvar, how="outer", left_on="hg38_gnomad_format", right_on="hg38_ID_clinvar")
+
+    merged_frame["VariantOnTranscript/DNA"] = merged_frame["VariantOnTranscript/DNA"].fillna(
+        merged_frame["Name_clinvar"].astype(str).str.extract(r":(c\.[^ ]+)")[0]
     )
 
-    merged_frame['VariantOnTranscript/DNA'] = merged_frame['VariantOnTranscript/DNA'].fillna(
-        merged_frame['Name_clinvar'].astype(str).str.extract(r':(c\.[^ ]+)')[0]
+    merged_frame["VariantOnTranscript/Protein"] = merged_frame["VariantOnTranscript/Protein"].fillna(
+        merged_frame["Name_clinvar"].astype(str).str.extract(r"\ \((p\.[^)]*)\)")[0]
     )
 
-    merged_frame['VariantOnTranscript/Protein'] = merged_frame['VariantOnTranscript/Protein'].fillna(
-        merged_frame['Name_clinvar'].astype(str).str.extract(r'\ \((p\.[^)]*)\)')[0]
-    )
-
-    merged_frame['malformed'] = merged_frame['Name_clinvar'].where(merged_frame['VariantOnTranscript/DNA'].isna())
-
+    merged_frame["malformed"] = merged_frame["Name_clinvar"].where(merged_frame["VariantOnTranscript/DNA"].isna())
 
     return merged_frame
 
 
-def transform_spdi_to_format(df, spdi_column="Canonical SPDI", new_column="hg38_ID")->pd.DataFrame:
+def transform_spdi_to_format(df, spdi_column="Canonical SPDI", new_column="hg38_ID") -> pd.DataFrame:
     """
     Transforms the SPDI format in a given column to the desired format.
 
@@ -509,7 +483,7 @@ def format_spdi(row) -> str | None:
         return None
 
 
-def save_lovd_as_vcf(data:pd.DataFrame, save_to:str="./lovd.vcf"):
+def save_lovd_as_vcf(data: pd.DataFrame, save_to: str = "./lovd.vcf"):
     """
     Gets hg38 variants from LOVD and saves as VCF file.
     :param DataFrame data: LOVD DataFrame with data
@@ -524,12 +498,10 @@ def save_lovd_as_vcf(data:pd.DataFrame, save_to:str="./lovd.vcf"):
         os.makedirs(save_to_dir)
 
     with open(save_to, "w", encoding="UTF-8") as f:
-        header = ("##fileformat=VCFv4.2\n"
-                  "##contig=<ID=6,length=63719980>\n"
-                  "#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO\n")
+        header = "##fileformat=VCFv4.2\n" "##contig=<ID=6,length=63719980>\n" "#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO\n"
         f.write(header)
         for variant in df.loc[:, "VariantOnGenome/DNA/hg38"]:
-            if len(variant) != 13 or variant[-2] != '>':
+            if len(variant) != 13 or variant[-2] != ">":
                 logging.warning("Skipping variant %s", variant)
                 continue
             record = ["6", variant[2:-3], ".", variant[-3], variant[-1], ".", ".", "."]
@@ -538,36 +510,36 @@ def save_lovd_as_vcf(data:pd.DataFrame, save_to:str="./lovd.vcf"):
             f.write("\n")
 
 
-def find_popmax_in_gnomad(data:pd.DataFrame):
+def find_popmax_in_gnomad(data: pd.DataFrame):
     """
     Finds popmax in gnomad data
     :param DataFrame data: Gnomad data.
     """
 
     population_mapping = {
-            'afr': 'African/African American',
-            'eas': 'East Asian',
-            'asj': 'Ashkenazi Jew',
-            'sas': 'South Asian',
-            'nfe': 'European (non-Finnish)',
-            'fin': 'European (Finnish)',
-            'mid': 'Middle Eastern',
-            'amr': 'Admixed American',
-            'ami': "Amish",
-            'remaining': 'Remaining',
-            '': ''
-        }
-    population_ids = ['afr', 'eas', 'asj', 'sas', 'nfe', 'fin', 'mid', 'amr', 'ami', 'remaining']
+        "afr": "African/African American",
+        "eas": "East Asian",
+        "asj": "Ashkenazi Jew",
+        "sas": "South Asian",
+        "nfe": "European (non-Finnish)",
+        "fin": "European (Finnish)",
+        "mid": "Middle Eastern",
+        "amr": "Admixed American",
+        "ami": "Amish",
+        "remaining": "Remaining",
+        "": "",
+    }
+    population_ids = ["afr", "eas", "asj", "sas", "nfe", "fin", "mid", "amr", "ami", "remaining"]
 
     for i in range(data.shape[0]):
         max_pop = 0
-        max_id = ''
+        max_id = ""
         for population_id in population_ids:
-            if data.loc[i, f'Allele_Frequency_{population_id}'] > max_pop:
-                max_pop = data.loc[i, f'Allele_Frequency_{population_id}']
+            if data.loc[i, f"Allele_Frequency_{population_id}"] > max_pop:
+                max_pop = data.loc[i, f"Allele_Frequency_{population_id}"]
                 max_id = population_id
-        data.loc[i, 'Popmax'] = max_pop
-        data.loc[i, 'Popmax population'] = population_mapping[max_id]
+        data.loc[i, "Popmax"] = max_pop
+        data.loc[i, "Popmax population"] = population_mapping[max_id]
 
 
 def parse_clinvar(rows: list[list[str]], variation_archives: list[ET.Element]):
@@ -580,15 +552,15 @@ def parse_clinvar(rows: list[list[str]], variation_archives: list[ET.Element]):
         row.append(name if name is not None else "")
 
         # Gene(s)
-        genes = [
-            inner.attrib.get("Symbol")
+        genes: list[str] = [
+            inner.attrib.get("Symbol")  # type: ignore[misc]
             for inner in element.findall("ClassifiedRecord/SimpleAllele/GeneList/Gene")
             if inner.attrib.get("Symbol") is not None
         ]
         row.append("|".join(genes) if genes else "")
 
         # Protein change
-        proteins = [
+        proteins: list[str] = [
             inner.text
             for inner in element.findall("ClassifiedRecord/SimpleAllele/ProteinChange")
             if inner.text is not None
@@ -597,11 +569,15 @@ def parse_clinvar(rows: list[list[str]], variation_archives: list[ET.Element]):
 
         # Condition(s)
         germline_classification = element.find("ClassifiedRecord/Classifications/GermlineClassification")
-        conditions = [
-            inner.text
-            for inner in germline_classification.findall("ConditionList/TraitSet/Trait/Name/ElementValue[@Type='Preferred']")
-            if inner.text is not None
-        ]
+        conditions: list[str] = []
+        if germline_classification is not None:
+            conditions = [
+                inner.text
+                for inner in germline_classification.findall(
+                    "ConditionList/TraitSet/Trait/Name/ElementValue[@Type='Preferred']"
+                )
+                if inner.text is not None
+            ]
         row.append("|".join(conditions) if conditions else "")
 
         # Accession
@@ -609,24 +585,44 @@ def parse_clinvar(rows: list[list[str]], variation_archives: list[ET.Element]):
         row.append(accession if accession is not None else "")
 
         # GRCh37Chromosome
-        grch37_sequence_location = element.find("ClassifiedRecord/SimpleAllele/Location/SequenceLocation[@Assembly='GRCh37']")
+        grch37_sequence_location = element.find(
+            "ClassifiedRecord/SimpleAllele/Location/SequenceLocation[@Assembly='GRCh37']"
+        )
         grch37_chromosome = grch37_sequence_location.attrib.get("Chr") if grch37_sequence_location is not None else None
         row.append(grch37_chromosome if grch37_chromosome is not None else "")
 
         # GRCh37Location
-        grch37_start = grch37_sequence_location.attrib.get("display_start") if grch37_sequence_location is not None else None
-        grch37_end = grch37_sequence_location.attrib.get("display_stop") if grch37_sequence_location is not None else None
-        row.append(f"{grch37_start} - {grch37_end}" if grch37_start is not None and grch37_end is not None and grch37_start != grch37_end else grch37_start if grch37_start is not None else "")
+        grch37_start = (
+            grch37_sequence_location.attrib.get("display_start") if grch37_sequence_location is not None else None
+        )
+        grch37_end = (
+            grch37_sequence_location.attrib.get("display_stop") if grch37_sequence_location is not None else None
+        )
+        row.append(
+            f"{grch37_start} - {grch37_end}"
+            if grch37_start is not None and grch37_end is not None and grch37_start != grch37_end
+            else grch37_start if grch37_start is not None else ""
+        )
 
         # GRCh38Chromosome
-        grch38_sequence_location = element.find("ClassifiedRecord/SimpleAllele/Location/SequenceLocation[@Assembly='GRCh38']")
+        grch38_sequence_location = element.find(
+            "ClassifiedRecord/SimpleAllele/Location/SequenceLocation[@Assembly='GRCh38']"
+        )
         grch38_chromosome = grch38_sequence_location.attrib.get("Chr") if grch38_sequence_location is not None else None
         row.append(grch38_chromosome if grch38_chromosome is not None else "")
 
         # GRCh38Location
-        grch38_start = grch38_sequence_location.attrib.get("display_start") if grch38_sequence_location is not None else None
-        grch38_end = grch38_sequence_location.attrib.get("display_stop") if grch38_sequence_location is not None else None
-        row.append(f"{grch38_start} - {grch38_end}" if grch38_start is not None and grch38_end is not None and grch38_start != grch38_end else grch38_start if grch38_start is not None else "")
+        grch38_start = (
+            grch38_sequence_location.attrib.get("display_start") if grch38_sequence_location is not None else None
+        )
+        grch38_end = (
+            grch38_sequence_location.attrib.get("display_stop") if grch38_sequence_location is not None else None
+        )
+        row.append(
+            f"{grch38_start} - {grch38_end}"
+            if grch38_start is not None and grch38_end is not None and grch38_start != grch38_end
+            else grch38_start if grch38_start is not None else ""
+        )
 
         # VariationID
         variation_id = element.attrib.get("VariationID")
@@ -644,16 +640,18 @@ def parse_clinvar(rows: list[list[str]], variation_archives: list[ET.Element]):
 
         # Canonical SPDI
         canonical_spdi = element.find("ClassifiedRecord/SimpleAllele/CanonicalSPDI")
-        row.append(canonical_spdi.text if canonical_spdi is not None else "")
+        row.append(canonical_spdi.text if canonical_spdi is not None and canonical_spdi.text is not None else "")
 
         # Variant type
         variant_type = element.find("ClassifiedRecord/SimpleAllele/VariantType")
-        row.append(variant_type.text if variant_type is not None else "")
+        row.append(variant_type.text if variant_type is not None and variant_type.text is not None else "")
 
         # Molecular consequence
-        molecular_consequences = [
-            inner.attrib.get("Type")
-            for inner in element.findall("ClassifiedRecord/SimpleAllele/HGVSlist/HGVS[@Type='coding']/MolecularConsequence")
+        molecular_consequences: list[str] = [
+            inner.attrib.get("Type")  # type: ignore[misc]
+            for inner in element.findall(
+                "ClassifiedRecord/SimpleAllele/HGVSlist/HGVS[@Type='coding']/MolecularConsequence"
+            )
             if inner.attrib.get("Type") is not None
         ]
         molecular_consequences = list(set(molecular_consequences))
@@ -661,15 +659,21 @@ def parse_clinvar(rows: list[list[str]], variation_archives: list[ET.Element]):
 
         # Germline classification
         description = germline_classification.find("Description") if germline_classification is not None else None
-        row.append(description.text if description is not None else "")
+        row.append(description.text if description is not None and description.text is not None else "")
 
         # Germline review status
         review_status = germline_classification.find("ReviewStatus") if germline_classification is not None else None
-        row.append(review_status.text if review_status is not None else "")
+        row.append(review_status.text if review_status is not None and review_status.text is not None else "")
 
         # Germline date last evaluated
-        date_last_evaluated = germline_classification.attrib.get("DateLastEvaluated") if germline_classification is not None else None
-        row.append(datetime.strptime(date_last_evaluated, "%Y-%m-%d").strftime("%b %d, %Y") if date_last_evaluated is not None else "")
+        date_last_evaluated = (
+            germline_classification.attrib.get("DateLastEvaluated") if germline_classification is not None else None
+        )
+        row.append(
+            datetime.strptime(date_last_evaluated, "%Y-%m-%d").strftime("%b %d, %Y")
+            if date_last_evaluated is not None
+            else ""
+        )
 
         # Append row to rows
         rows.append(row)
@@ -690,7 +694,7 @@ def process_genomic_data(df: pd.DataFrame) -> pd.DataFrame:
     position_cols = {
         "hg38_gnomad_format": "LOVD_count",
         "variant_id_gnomad": "gnomAD_count",
-        "hg38_ID_clinvar": "ClinVar_count"
+        "hg38_ID_clinvar": "ClinVar_count",
     }
     annotation_cols = [
         "VariantOnTranscript/DNA",
@@ -700,37 +704,18 @@ def process_genomic_data(df: pd.DataFrame) -> pd.DataFrame:
         "Germline classification_clinvar",
         "Allele Frequency_gnomad",
         "Popmax_gnomad",
-        "Popmax population_gnomad"
+        "Popmax population_gnomad",
     ]
     melted = df.melt(
-        id_vars=annotation_cols,
-        value_vars=list(position_cols.keys()),
-        var_name='source_col',
-        value_name='gen_pos'
+        id_vars=annotation_cols, value_vars=list(position_cols.keys()), var_name="source_col", value_name="gen_pos"
     )
-    melted = melted.dropna(subset=['gen_pos'])
-    counts = (
-        melted
-        .groupby(['gen_pos', 'source_col'])
-        .size()
-        .unstack(fill_value=0)
-        .rename(columns=position_cols)
-    )
+    melted = melted.dropna(subset=["gen_pos"])
+    counts = melted.groupby(["gen_pos", "source_col"]).size().unstack(fill_value=0).rename(columns=position_cols)
     for count_col in position_cols.values():
         if count_col not in counts:
             counts[count_col] = 0
-    annotations = (
-        melted
-        .sort_values('gen_pos')
-        .groupby('gen_pos')[annotation_cols]
-        .first()
-    )
-    final_df = (
-        counts
-        .join(annotations)
-        .reset_index()
-        .rename(columns={'gen_pos': 'gen_pos'})
-    )
-    cols = ['gen_pos'] + annotation_cols + list(position_cols.values())
+    annotations = melted.sort_values("gen_pos").groupby("gen_pos")[annotation_cols].first()
+    final_df = counts.join(annotations).reset_index().rename(columns={"gen_pos": "gen_pos"})
+    cols = ["gen_pos"] + annotation_cols + list(position_cols.values())
     final_df = final_df[cols]
     return final_df

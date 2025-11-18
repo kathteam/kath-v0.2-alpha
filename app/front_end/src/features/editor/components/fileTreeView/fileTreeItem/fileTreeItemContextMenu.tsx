@@ -183,7 +183,11 @@ export const FileTreeItemContextMenu: React.FC<FileTreeItemContextMenuProps> = (
     setRenameDialogOpen(false);
     const data = { label, type: item.fileType === FileTypes.FOLDER ? FileTypes.FOLDER : FileTypes.FILE };
     const response = await axios.put(`${Endpoints.WORKSPACE_RENAME}/${item.id}`, data);
-    filesHistoryStateUpdate(undefined, { id: item.id, label: item.label, type: item.fileType });
+    filesHistoryStateUpdate(undefined, {
+      id: item.id,
+      label: item.label,
+      type: item.fileType || FileTypes.FILE,
+    });
     if (file.id === item.id)
       fileStateUpdate(
         { id: response.data.newId, label: response.data.newLabel, type: response.data.newType || FileTypes.FILE },

@@ -1,0 +1,58 @@
+# KATH Network Configuration
+# This file contains all network-related settings for the KATH application.
+# These settings can be modified without rebuilding the Docker container.
+# Just restart the container for changes to take effect.
+
+# Backend API Server Configuration
+backend:
+  # Host address to bind the Flask server to
+  # Use 0.0.0.0 to listen on all available interfaces
+  host: "0.0.0.0"
+
+  # Port number for the backend API server
+  # Must be between 1 and 65535
+  port: 8080
+
+  # Application domain/hostname
+  # Used for CORS origin validation and API endpoint configuration
+  domain: "localhost"
+
+# Frontend Server Configuration
+frontend:
+  # Host address to bind the Vite dev server to
+  # Use 0.0.0.0 to listen on all available interfaces
+  host: "0.0.0.0"
+
+  # Port number for the frontend Vite server
+  # Must be between 1 and 65535
+  port: 5173
+
+# CORS (Cross-Origin Resource Sharing) Configuration
+cors:
+  # Allowed origins for API requests
+  # Can be a single origin or a comma-separated list
+  # Use "*" to allow all origins (not recommended for production)
+  # Examples:
+  #   - "http://localhost:5173"
+  #   - "http://localhost:5173,http://localhost:3000"
+  #   - "https://example.com,https://www.example.com"
+  allowed_origins: "*"
+
+# Redis Configuration
+redis:
+  # Redis server host
+  host: "localhost"
+
+  # Redis server port
+  port: 6379
+
+  # Redis database number (0-15)
+  database: 0
+
+# Health Check Configuration
+health_check:
+  # Enable health check endpoint
+  enabled: true
+
+  # Health check endpoint path
+  endpoint: "/api/v1/monitoring/health"

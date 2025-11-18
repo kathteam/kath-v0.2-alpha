@@ -1,16 +1,8 @@
 """Tools Package Initialization."""
 
-from .cadd import (
-    cadd_pipeline,
-)
-
-from .spliceai import (
-    add_spliceai_eval_columns,
-)
-
-from .revel import (
-    main_revel_pipeline
-)
+from .cadd import cadd_pipeline
+from .revel import main_revel_pipeline
+from .spliceai import add_spliceai_eval_columns
 
 __all__ = [
     # CADD related exports

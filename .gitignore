@@ -5,9 +5,55 @@ __pycache__
 
 # specific folders
 data/*
+database/*
+app/back_end/instance/*
 app/back_end/src/workspace/revel
 app/back_end/src/logs/
+
+# workspace test data (exclude test workspaces)
+app/back_end/src/workspace/test-*/
+
+# large test data files (keep smaller test files like template_10.csv, template_3000.csv)
+**/template_100000.csv
+**/template_500000.csv
+
+# db
+database/
+data/
+app/app/
 
 # large gene reference files
 *.fa
 *.fa.fai
+
+# test and coverage files
+.coverage
+htmlcov/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+*.log.*
+*.pid
+dist/
+build/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+*.swp
+*.swo
+*~

@@ -31,13 +31,13 @@ Initialization:
 # pylint: disable=import-error
 
 import logging
+
 from flask_compress import Compress
-from flask_socketio import SocketIO
 from flask_cors import CORS
+from flask_socketio import SocketIO
 
 from ..config import Env
 from ..utils.socket_manager import SocketManager
-
 
 # Configure logging
 logging.basicConfig(

@@ -99,8 +99,10 @@ export const getWorkspaceArray = (
     workspaceArray.push({
       id: item.id,
       label: item.label,
-      type: item.fileType,
-      parent: parent ? { id: parent.id, label: parent.label, type: parent.fileType } : undefined,
+      type: item.fileType || FileTypes.FILE,
+      parent: parent
+        ? { id: parent.id, label: parent.label, type: parent.fileType || FileTypes.FOLDER }
+        : undefined,
     });
     if (item.children && item.children.length !== 0) {
       workspaceArray.push(...getWorkspaceArray(item.children, item));

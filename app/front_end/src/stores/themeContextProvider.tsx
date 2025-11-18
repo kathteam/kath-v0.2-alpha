@@ -58,6 +58,15 @@ export const ThemeContextProvider: React.FC<Props> = ({ children }) => {
   const theme = useMemo(
     () =>
       createTheme({
+        breakpoints: {
+          values: {
+            xs: 0, // Mobile portrait
+            sm: 600, // Mobile landscape
+            md: 900, // Tablet
+            lg: 1200, // Desktop
+            xl: 1536, // Large desktop
+          },
+        },
         palette: {
           mode: mode as PaletteMode,
           primary: {
@@ -145,6 +154,18 @@ export const ThemeContextProvider: React.FC<Props> = ({ children }) => {
               root: {
                 fontFamily: 'Nunito',
                 textTransform: 'none',
+                minHeight: '44px', // Touch-friendly minimum height
+                minWidth: '44px', // Touch-friendly minimum width
+                padding: '10px 16px', // Comfortable padding for touch
+              },
+            },
+          },
+          MuiIconButton: {
+            styleOverrides: {
+              root: {
+                minWidth: '44px', // Touch-friendly minimum size
+                minHeight: '44px',
+                padding: '10px', // Comfortable padding
               },
             },
           },

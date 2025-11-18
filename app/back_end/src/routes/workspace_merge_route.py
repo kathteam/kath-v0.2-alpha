@@ -9,36 +9,32 @@ the user's workspace.
 import os
 
 import pandas as pd
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 
-from ..setup.extensions import logger
-from ..utils.helpers import socketio_emit_to_user_session
-from ..utils.exceptions import UnexpectedError
-from ..constants import (
-    WORKSPACE_MERGE_ROUTE,
-    WORKSPACE_DIR,
-    CONSOLE_FEEDBACK_EVENT,
-    WORKSPACE_UPDATE_FEEDBACK_EVENT,
-)
+from ..constants import CONSOLE_FEEDBACK_EVENT, WORKSPACE_DIR, WORKSPACE_MERGE_ROUTE, WORKSPACE_UPDATE_FEEDBACK_EVENT
 from ..data.refactoring import (
-    set_lovd_dtypes,
-    set_gnomad_dtypes,
-    set_custom_file_dtypes,
-    set_clinvar_dtypes,
-    parse_lovd,
-    parse_gnomad,
-    parse_custom_file,
     clinvar_file_parse,
-    merge_gnomad_lovd,
     merge_custom_file,
-    merge_lovd_clinvar, transform_spdi_to_format,
-    process_genomic_data
+    merge_gnomad_lovd,
+    merge_lovd_clinvar,
+    parse_custom_file,
+    parse_gnomad,
+    parse_lovd,
+    process_genomic_data,
+    set_clinvar_dtypes,
+    set_custom_file_dtypes,
+    set_gnomad_dtypes,
+    set_lovd_dtypes,
+    transform_spdi_to_format,
 )
+from ..setup.extensions import logger
+from ..utils.exceptions import UnexpectedError
+from ..utils.helpers import socketio_emit_to_user_session
 
 workspace_merge_route_bp = Blueprint("workspace_merge_route", __name__)
-@workspace_merge_route_bp.route(
-    f"{WORKSPACE_MERGE_ROUTE}/all/<path:relative_path>", methods=["GET"]
-)
+
+
+@workspace_merge_route_bp.route(f"{WORKSPACE_MERGE_ROUTE}/all/<path:relative_path>", methods=["GET"])
 def get_workspace_merge_all(relative_path):
     """
     Route to merge all data and save the merged data to the workspace.
@@ -59,11 +55,7 @@ def get_workspace_merge_all(relative_path):
         or "gnomadFile" not in request.args
     ):
         return (
-            jsonify(
-                {
-                    "error": "'override', 'lovdFile', 'clinvarFile' and 'gnomadFile' parameters are required"
-                }
-            ),
+            jsonify({"error": "'override', 'lovdFile', 'clinvarFile' and 'gnomadFile' parameters are required"}),
             400,
         )
 
@@ -86,9 +78,7 @@ def get_workspace_merge_all(relative_path):
     #     - This is optional, if empty it should be ignored
 
     destination_path = os.path.join(WORKSPACE_DIR, uuid, relative_path)
-    override = request.args.get(
-        "override", default=False, type=bool
-    )  # Ensure it's treated as a boolean
+    override = request.args.get("override", default=False, type=bool)  # Ensure it's treated as a boolean
     lovd_file = os.path.join(WORKSPACE_DIR, uuid, request.args.get("lovdFile"))
     clinvar_file = os.path.join(WORKSPACE_DIR, uuid, request.args.get("clinvarFile"))
     gnomad_file = os.path.join(WORKSPACE_DIR, uuid, request.args.get("gnomadFile"))
@@ -101,8 +91,7 @@ def get_workspace_merge_all(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "info",
-                "message": f"Merging all data to '{relative_path}' with "
-                + f"override: '{override}'...",
+                "message": f"Merging all data to '{relative_path}' with " + f"override: '{override}'...",
             },
             uuid,
             sid,
@@ -142,15 +131,21 @@ def get_workspace_merge_all(relative_path):
         lovd_data = pd.merge(
             lovd_data["Variants_On_Transcripts"],
             variants_on_genome[
-                ["id", "VariantOnGenome/DNA", "VariantOnGenome/DNA/hg38","VariantOnGenome/ClinicalClassification","VariantOnGenome/ClinicalClassification/Method"]
+                [
+                    "id",
+                    "VariantOnGenome/DNA",
+                    "VariantOnGenome/DNA/hg38",
+                    "VariantOnGenome/ClinicalClassification",
+                    "VariantOnGenome/ClinicalClassification/Method",
+                ]
             ],
             on="id",
             how="left",
         )
-        lovd_clinvar_data= merge_lovd_clinvar(lovd_data, clinvar_data)
+        lovd_clinvar_data = merge_lovd_clinvar(lovd_data, clinvar_data)
         lovd_clinvar_gnomad_data = merge_gnomad_lovd(lovd_clinvar_data, gnomad_data)
         if custom_file_param:
-            final_data = merge_custom_file(custom_data,lovd_clinvar_gnomad_data)
+            final_data = merge_custom_file(custom_data, lovd_clinvar_gnomad_data)
         else:
             final_data = lovd_clinvar_gnomad_data
 
@@ -193,17 +188,14 @@ def get_workspace_merge_all(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"FileNotFoundError: {e} while merging all data "
-                + f"{destination_path}",
+                "message": f"FileNotFoundError: {e} while merging all data " + f"{destination_path}",
             },
             uuid,
             sid,
         )
         return jsonify({"error": "Requested file not found"}), 404
     except PermissionError as e:
-        logger.error(
-            "PermissionError: %s while merging all data %s", e, destination_path
-        )
+        logger.error("PermissionError: %s while merging all data %s", e, destination_path)
         # Emit a feedback to the user's console
         socketio_emit_to_user_session(
             CONSOLE_FEEDBACK_EVENT,
@@ -226,8 +218,7 @@ def get_workspace_merge_all(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e.message} while mergingall data "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e.message} while mergingall data " + f"{destination_path}",
             },
             uuid,
             sid,
@@ -244,8 +235,7 @@ def get_workspace_merge_all(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e} while merging all data "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e} while merging all data " + f"{destination_path}",
             },
             uuid,
             sid,
@@ -255,9 +245,7 @@ def get_workspace_merge_all(relative_path):
     return jsonify({"message": "All data merge successful"}), 200
 
 
-@workspace_merge_route_bp.route(
-    f"{WORKSPACE_MERGE_ROUTE}/lovd_gnomad/<path:relative_path>", methods=["GET"]
-)
+@workspace_merge_route_bp.route(f"{WORKSPACE_MERGE_ROUTE}/lovd_gnomad/<path:relative_path>", methods=["GET"])
 def get_workspace_merge_lovd_gnomad(relative_path):
     """
     Route to merge LOVD and gnomAD data and save the merged data to the workspace.
@@ -271,17 +259,9 @@ def get_workspace_merge_lovd_gnomad(relative_path):
     sid = request.headers.get("sid")
 
     # Check if 'override', 'lovdFile' and 'gnomadFile' are provided
-    if (
-        "override" not in request.args
-        or "lovdFile" not in request.args
-        or "gnomadFile" not in request.args
-    ):
+    if "override" not in request.args or "lovdFile" not in request.args or "gnomadFile" not in request.args:
         return (
-            jsonify(
-                {
-                    "error": "'override', 'lovdFile' and 'gnomadFile' parameters are required"
-                }
-            ),
+            jsonify({"error": "'override', 'lovdFile' and 'gnomadFile' parameters are required"}),
             400,
         )
 
@@ -299,9 +279,7 @@ def get_workspace_merge_lovd_gnomad(relative_path):
     #     - The path to the gnomAD file to be used in merge
 
     destination_path = os.path.join(WORKSPACE_DIR, uuid, relative_path)
-    override = request.args.get(
-        "override", default=False, type=bool
-    )  # Ensure it's treated as a boolean
+    override = request.args.get("override", default=False, type=bool)  # Ensure it's treated as a boolean
     lovd_file = os.path.join(WORKSPACE_DIR, uuid, request.args.get("lovdFile"))
     gnomad_file = os.path.join(WORKSPACE_DIR, uuid, request.args.get("gnomadFile"))
 
@@ -311,8 +289,7 @@ def get_workspace_merge_lovd_gnomad(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "info",
-                "message": f"Merging LOVD and gnomAD data to '{relative_path}' with "
-                + f"override: '{override}'...",
+                "message": f"Merging LOVD and gnomAD data to '{relative_path}' with " + f"override: '{override}'...",
             },
             uuid,
             sid,
@@ -343,7 +320,13 @@ def get_workspace_merge_lovd_gnomad(relative_path):
         lovd_data = pd.merge(
             lovd_data["Variants_On_Transcripts"],
             variants_on_genome[
-                ["id", "VariantOnGenome/DNA", "VariantOnGenome/DNA/hg38","VariantOnGenome/ClinicalClassification","VariantOnGenome/ClinicalClassification/Method"]
+                [
+                    "id",
+                    "VariantOnGenome/DNA",
+                    "VariantOnGenome/DNA/hg38",
+                    "VariantOnGenome/ClinicalClassification",
+                    "VariantOnGenome/ClinicalClassification/Method",
+                ]
             ],
             on="id",
             how="left",
@@ -389,17 +372,14 @@ def get_workspace_merge_lovd_gnomad(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"FileNotFoundError: {e} while merging LOVD and gnomAD "
-                + f"{destination_path}",
+                "message": f"FileNotFoundError: {e} while merging LOVD and gnomAD " + f"{destination_path}",
             },
             uuid,
             sid,
         )
         return jsonify({"error": "Requested file not found"}), 404
     except PermissionError as e:
-        logger.error(
-            "PermissionError: %s while merging LOVD and gnomAD %s", e, destination_path
-        )
+        logger.error("PermissionError: %s while merging LOVD and gnomAD %s", e, destination_path)
         # Emit a feedback to the user's console
         socketio_emit_to_user_session(
             CONSOLE_FEEDBACK_EVENT,
@@ -422,8 +402,7 @@ def get_workspace_merge_lovd_gnomad(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e.message} while merging LOVD and gnomAD "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e.message} while merging LOVD and gnomAD " + f"{destination_path}",
             },
             uuid,
             sid,
@@ -440,8 +419,7 @@ def get_workspace_merge_lovd_gnomad(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e} while merging LOVD and gnomAD "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e} while merging LOVD and gnomAD " + f"{destination_path}",
             },
             uuid,
             sid,
@@ -451,9 +429,7 @@ def get_workspace_merge_lovd_gnomad(relative_path):
     return jsonify({"message": "LOVD and gnomAD data merge successful"}), 200
 
 
-@workspace_merge_route_bp.route(
-    f"{WORKSPACE_MERGE_ROUTE}/lovd_clinvar/<path:relative_path>", methods=["GET"]
-)
+@workspace_merge_route_bp.route(f"{WORKSPACE_MERGE_ROUTE}/lovd_clinvar/<path:relative_path>", methods=["GET"])
 def get_workspace_merge_lovd_clinvar(relative_path):
     """
     Route to merge LOVD and ClinVar data and save the merged data to the workspace.
@@ -467,17 +443,9 @@ def get_workspace_merge_lovd_clinvar(relative_path):
     sid = request.headers.get("sid")
 
     # Check if 'override', 'lovdFile' and 'gnomadFile' are provided
-    if (
-        "override" not in request.args
-        or "lovdFile" not in request.args
-        or "clinvarFile" not in request.args
-    ):
+    if "override" not in request.args or "lovdFile" not in request.args or "clinvarFile" not in request.args:
         return (
-            jsonify(
-                {
-                    "error": "'override', 'lovdFile' and 'clinvarFile' parameters are required"
-                }
-            ),
+            jsonify({"error": "'override', 'lovdFile' and 'clinvarFile' parameters are required"}),
             400,
         )
 
@@ -505,8 +473,7 @@ def get_workspace_merge_lovd_clinvar(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "info",
-                "message": f"Merging LOVD and ClinVar data to '{relative_path}' with "
-                + f"override: '{override}'...",
+                "message": f"Merging LOVD and ClinVar data to '{relative_path}' with " + f"override: '{override}'...",
             },
             uuid,
             sid,
@@ -537,7 +504,13 @@ def get_workspace_merge_lovd_clinvar(relative_path):
         lovd_data = pd.merge(
             lovd_data["Variants_On_Transcripts"],
             variants_on_genome[
-                ["id", "VariantOnGenome/DNA", "VariantOnGenome/DNA/hg38","VariantOnGenome/ClinicalClassification","VariantOnGenome/ClinicalClassification/Method"]
+                [
+                    "id",
+                    "VariantOnGenome/DNA",
+                    "VariantOnGenome/DNA/hg38",
+                    "VariantOnGenome/ClinicalClassification",
+                    "VariantOnGenome/ClinicalClassification/Method",
+                ]
             ],
             on="id",
             how="left",
@@ -583,24 +556,20 @@ def get_workspace_merge_lovd_clinvar(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"FileNotFoundError: {e} while merging LOVD and ClinVar "
-                + f"{destination_path}",
+                "message": f"FileNotFoundError: {e} while merging LOVD and ClinVar " + f"{destination_path}",
             },
             uuid,
             sid,
         )
         return jsonify({"error": "Requested file not found"}), 404
     except PermissionError as e:
-        logger.error(
-            "PermissionError: %s while merging LOVD and ClinVar %s", e, destination_path
-        )
+        logger.error("PermissionError: %s while merging LOVD and ClinVar %s", e, destination_path)
         # Emit a feedback to the user's console
         socketio_emit_to_user_session(
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"PermissionError: {e} while merging LOVD and ClinVar "
-                + f"{destination_path}",
+                "message": f"PermissionError: {e} while merging LOVD and ClinVar " + f"{destination_path}",
             },
             uuid,
             sid,
@@ -617,8 +586,7 @@ def get_workspace_merge_lovd_clinvar(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e.message} while merging LOVD and ClinVar "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e.message} while merging LOVD and ClinVar " + f"{destination_path}",
             },
             uuid,
             sid,
@@ -635,8 +603,7 @@ def get_workspace_merge_lovd_clinvar(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e} while merging LOVD and ClinVar "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e} while merging LOVD and ClinVar " + f"{destination_path}",
             },
             uuid,
             sid,

@@ -7,27 +7,19 @@ the user's workspace.
 # pylint: disable=broad-exception-caught
 
 import os
-
 import time  # TODO: Remove this import once the align logic is implemented
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 
+from ..constants import CONSOLE_FEEDBACK_EVENT, WORKSPACE_ALIGN_ROUTE, WORKSPACE_DIR, WORKSPACE_UPDATE_FEEDBACK_EVENT
 from ..setup.extensions import logger
-from ..utils.helpers import socketio_emit_to_user_session
 from ..utils.exceptions import UnexpectedError
-from ..constants import (
-    WORKSPACE_ALIGN_ROUTE,
-    WORKSPACE_DIR,
-    CONSOLE_FEEDBACK_EVENT,
-    WORKSPACE_UPDATE_FEEDBACK_EVENT,
-)
+from ..utils.helpers import socketio_emit_to_user_session
 
 workspace_align_route_bp = Blueprint("workspace_align_route", __name__)
 
 
-@workspace_align_route_bp.route(
-    f"{WORKSPACE_ALIGN_ROUTE}/fasta_fastq/<path:relative_path>", methods=["GET"]
-)
+@workspace_align_route_bp.route(f"{WORKSPACE_ALIGN_ROUTE}/fasta_fastq/<path:relative_path>", methods=["GET"])
 def get_workspace_align_fasta_fastq(relative_path):
     """
     Route to align FASTA and FASTQ data and save the aligned data to the workspace.
@@ -41,16 +33,9 @@ def get_workspace_align_fasta_fastq(relative_path):
     sid = request.headers.get("sid")
 
     # Check if 'fastaFile' and 'fastqFileFolder' are provided
-    if (
-        "fastaFile" not in request.args
-        or "fastqFileFolder" not in request.args
-    ):
+    if "fastaFile" not in request.args or "fastqFileFolder" not in request.args:
         return (
-            jsonify(
-                {
-                    "error": "'fastaFile' and 'fastqFileFolder' parameters are required"
-                }
-            ),
+            jsonify({"error": "'fastaFile' and 'fastqFileFolder' parameters are required"}),
             400,
         )
 
@@ -70,10 +55,7 @@ def get_workspace_align_fasta_fastq(relative_path):
         # Emit a feedback to the user's console
         socketio_emit_to_user_session(
             CONSOLE_FEEDBACK_EVENT,
-            {
-                "type": "info",
-                "message": f"Aligning FASTA and FASTQ data to '{relative_path}'"
-            },
+            {"type": "info", "message": f"Aligning FASTA and FASTQ data to '{relative_path}'"},
             uuid,
             sid,
         )
@@ -83,7 +65,7 @@ def get_workspace_align_fasta_fastq(relative_path):
 
         if not os.path.exists(fastq_file_folder):
             raise FileNotFoundError(f"FASTQ data not found at: {fastq_file_folder}")
-        
+
         #
         # TODO: Implement FASTA and FASTQ data align and save logic using defined parameters
         # [destination_path, fasta_file, fastq_file_folder]
@@ -121,17 +103,14 @@ def get_workspace_align_fasta_fastq(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"FileNotFoundError: {e} while aligning FASTA and FASTQ "
-                + f"{destination_path}",
+                "message": f"FileNotFoundError: {e} while aligning FASTA and FASTQ " + f"{destination_path}",
             },
             uuid,
             sid,
         )
         return jsonify({"error": "Requested file not found"}), 404
     except PermissionError as e:
-        logger.error(
-            "PermissionError: %s while aligning FASTA and FASTQ %s", e, destination_path
-        )
+        logger.error("PermissionError: %s while aligning FASTA and FASTQ %s", e, destination_path)
         # Emit a feedback to the user's console
         socketio_emit_to_user_session(
             CONSOLE_FEEDBACK_EVENT,
@@ -154,8 +133,7 @@ def get_workspace_align_fasta_fastq(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e.message} while aligning FASTA and FASTQ "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e.message} while aligning FASTA and FASTQ " + f"{destination_path}",
             },
             uuid,
             sid,
@@ -172,8 +150,7 @@ def get_workspace_align_fasta_fastq(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e} while aligning FASTA and FASTQ "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e} while aligning FASTA and FASTQ " + f"{destination_path}",
             },
             uuid,
             sid,

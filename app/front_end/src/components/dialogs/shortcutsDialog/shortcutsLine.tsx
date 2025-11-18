@@ -10,14 +10,14 @@ interface ShortcutLineProps {
 
 export const ShortcutsLine: React.FC<ShortcutLineProps> = ({ windowsKeys, macOSKeys, description, macOS }) => {
   const macOSSymbols: { [key: string]: string } = {
-    command: '⌘',
-    option: '⌥',
-    control: '⌃',
-    shift: '⇧',
-    delete: '⌫',
-    return: '↩',
-    escape: '⎋',
-    capslock: '⇪',
+    command: '',
+    option: '',
+    control: '',
+    shift: '',
+    delete: '',
+    return: '',
+    escape: '',
+    capslock: '',
   };
 
   const keys = macOS ? macOSKeys.map((key) => macOSSymbols[key.toLowerCase()] || key) : windowsKeys;

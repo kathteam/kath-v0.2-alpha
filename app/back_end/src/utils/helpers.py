@@ -3,9 +3,9 @@ This package provides utilities for handling Socket.IO events and managing works
 structures.
 
 Functions:
-- socketio_emit_to_user_session: Sends a Socket.IO event to a specific user session. The event data 
+- socketio_emit_to_user_session: Sends a Socket.IO event to a specific user session. The event data
     is augmented with a timestamp indicating the current time.
-- build_workspace_structure: Recursively builds a dictionary representation of a directory structure 
+- build_workspace_structure: Recursively builds a dictionary representation of a directory structure
     for a given workspace. It includes metadata about files and directories and provides a
     hierarchical view of the workspace.
 
@@ -35,7 +35,7 @@ above.
 import os
 from datetime import datetime
 
-from ..setup.extensions import socketio, socket_manager
+from ..setup.extensions import socket_manager, socketio
 
 
 def socketio_emit_to_user_session(event, data, uuid, sid):
@@ -95,9 +95,7 @@ def build_workspace_structure(path: str, user_workspace_dir):
     file_type = (
         "folder"
         if os.path.isdir(path)
-        else (
-            "txt" if path.endswith(".txt") else ("csv" if path.endswith(".csv") else "unsupported")
-        )
+        else ("txt" if path.endswith(".txt") else ("csv" if path.endswith(".csv") else "unsupported"))
     )
 
     if file_type == "unsupported":
@@ -116,12 +114,7 @@ def build_workspace_structure(path: str, user_workspace_dir):
             # for child in os.listdir(path)
             child_structure
             for child in os.listdir(path)
-            if (
-                child_structure := build_workspace_structure(
-                    os.path.join(path, child), user_workspace_dir
-                )
-            )
-            is not None
+            if (child_structure := build_workspace_structure(os.path.join(path, child), user_workspace_dir)) is not None
         ]
 
     return workspace_structure
@@ -154,6 +147,7 @@ def convert_to_number(value):
     except ValueError:
         return value
 
+
 def generate_filter_suffix(filter):
     if filter:
         filter_key, filter_info = list(filter.items())[0]
@@ -161,6 +155,7 @@ def generate_filter_suffix(filter):
         filter_value = filter_info.get("value")
         return f".filter.{filter_key}.{filter_operator}.{filter_value}"
     return ".filter"
+
 
 def generate_sort_suffix(sort):
     if sort:

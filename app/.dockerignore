@@ -6,8 +6,15 @@
 **/.gitignore
 **/.venv
 **/__pycache__
+**/*.pyc
+**/instance/
+back_end/instance/*
 back_end/src/workspace/*
 !back_end/src/workspace/template/
+**/tests/
+**/.pytest_cache/
+**/htmlcov/
+**/.coverage
 
 # Logs
 **/logs
@@ -22,7 +29,6 @@ back_end/src/workspace/*
 **/dist
 **/dist-ssr
 *.local
-**/package-lock.json
 
 # Editor directories and files
 **/.vs

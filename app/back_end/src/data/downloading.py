@@ -4,30 +4,30 @@ import glob
 import logging
 import os
 import time
-
-import requests
-import pandas as pd
 import xml.etree.ElementTree as ET
+from typing import Any, List
+
+import pandas as pd
+import requests
 from pandas.core.interchange.dataframe_protocol import DataFrame
 from requests import RequestException
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from .constants import (LOVD_FILE_URL,
-                        LOVD_PATH,
-                        DATABASES_DOWNLOAD_PATHS,
-                        LOVD_FILE_URL_EYS,
-                        STORE_AS_LOVD,
-                        STORE_AS_GNOMAD,
-                        STORE_AS_CLINVAR)
-from .refactoring import (parse_lovd,
-                        parse_clinvar)
-from .helpers import (construct_clinvar_gene_identifiers_url,
-                      contruct_clinvar_summaries_url,
-                      write_to_csv)
+from .constants import (
+    DATABASES_DOWNLOAD_PATHS,
+    LOVD_FILE_URL,
+    LOVD_FILE_URL_EYS,
+    LOVD_PATH,
+    STORE_AS_CLINVAR,
+    STORE_AS_GNOMAD,
+    STORE_AS_LOVD,
+)
+from .helpers import construct_clinvar_gene_identifiers_url, contruct_clinvar_summaries_url, write_to_csv
+from .refactoring import parse_clinvar, parse_lovd
+
 
 # EXCEPTIONS
 class BadResponseException(Exception):
@@ -38,7 +38,7 @@ class DownloadError(Exception):
     """Custom exception for download errors."""
 
 
-def get_file_from_url(url:str, save_to:str, override:bool=False):
+def get_file_from_url(url: str, save_to: str, override: bool = False):
     """
     Gets file from url and saves it into provided path. Overrides, if override is True.
 
@@ -67,14 +67,13 @@ def get_file_from_url(url:str, save_to:str, override:bool=False):
         raise DownloadError(f"Error while downloading file from {url}") from e
 
     if response.status_code != 200:
-        raise BadResponseException(f"Bad response from {url}."
-                                   f" Status code: {response.status_code}")
+        raise BadResponseException(f"Bad response from {url}." f" Status code: {response.status_code}")
 
     with open(save_to, "wb") as f:
         f.write(response.content)
 
 
-def download_lovd_database_for_eys_gene(save_to:str = STORE_AS_LOVD, override:bool=False):
+def download_lovd_database_for_eys_gene(save_to: str = STORE_AS_LOVD, override: bool = False):
     """
     Gets file from url and saves it into provided path. Overrides, if override is True.
 
@@ -100,14 +99,13 @@ def download_lovd_database_for_eys_gene(save_to:str = STORE_AS_LOVD, override:bo
         raise DownloadError(f"Error while downloading file from {url}") from e
 
     if response.status_code != 200:
-        raise BadResponseException(f"Bad response from {url}."
-                                   f" Status code: {response.status_code}")
+        raise BadResponseException(f"Bad response from {url}." f" Status code: {response.status_code}")
 
     with open(save_to, "wb") as f:
         f.write(response.content)
 
 
-def download_genes_lovd(gene_list: list, folder_path:str=LOVD_PATH, raise_exception:bool=False):
+def download_genes_lovd(gene_list: list, folder_path: str = LOVD_PATH, raise_exception: bool = False):
     """
     Downloads data into txt files from gene_list.
 
@@ -125,10 +123,9 @@ def download_genes_lovd(gene_list: list, folder_path:str=LOVD_PATH, raise_except
             raise DownloadError(f"Error while downloading file from {url}") from e
 
         if response.status_code != 200:
-            raise BadResponseException(f"Bad response from {url}."
-                                       f" Status code: {response.status_code}")
+            raise BadResponseException(f"Bad response from {url}." f" Status code: {response.status_code}")
         # If gene does not exist, the first word of the file will be Error
-        valid = 'Error' not in response.text[:6]
+        valid = "Error" not in response.text[:6]
         if valid:
             get_file_from_url(url, file_path)
         elif raise_exception:
@@ -137,7 +134,7 @@ def download_genes_lovd(gene_list: list, folder_path:str=LOVD_PATH, raise_except
             logging.error("Symbol: %s does not exist in the LOVD database", gene)
 
 
-def download_database_for_eys_gene(database_name:str, override:bool=False):
+def download_database_for_eys_gene(database_name: str, override: bool = False):
     """
     downloads chosen database
     and handles where it should be saved,
@@ -146,7 +143,7 @@ def download_database_for_eys_gene(database_name:str, override:bool=False):
     :param override: should an existing file be overriden with a new one
     """
 
-    save_as = DATABASES_DOWNLOAD_PATHS[database_name]["store_as"]
+    save_as = DATABASES_DOWNLOAD_PATHS[database_name]["store_as"]  # type: ignore[index]
     os_path = os.path.join(os.getcwd(), "..", "data", database_name, save_as)
 
     if os.path.exists(os_path) and override:
@@ -154,22 +151,17 @@ def download_database_for_eys_gene(database_name:str, override:bool=False):
     elif os.path.exists(os_path) and not override:
         return
 
-    url = DATABASES_DOWNLOAD_PATHS[database_name]["url"]
-    button_location = DATABASES_DOWNLOAD_PATHS[database_name]["button"]
-    clickable = DATABASES_DOWNLOAD_PATHS[database_name]["clickable"]
+    url = DATABASES_DOWNLOAD_PATHS[database_name]["url"]  # type: ignore[index]
+    button_location = DATABASES_DOWNLOAD_PATHS[database_name]["button"]  # type: ignore[index]
+    clickable = DATABASES_DOWNLOAD_PATHS[database_name]["clickable"]  # type: ignore[index]
 
     firefox_options = webdriver.FirefoxOptions()
     firefox_options.headless = True
-    firefox_options.add_argument('--headless')
+    firefox_options.add_argument("--headless")
     firefox_options.set_preference("browser.download.folderList", 2)
     firefox_options.set_preference("browser.download.manager.showWhenStarting", False)
-    firefox_options.set_preference("browser.download.dir",
-                                   os.path.join(os.getcwd(),
-                                                "..",
-                                                "data",
-                                                database_name))
-    firefox_options.set_preference("browser.helperApps.neverAsk.saveToDisk",
-                                   "application/octet-stream")
+    firefox_options.set_preference("browser.download.dir", os.path.join(os.getcwd(), "..", "data", database_name))
+    firefox_options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream")
 
     driver = webdriver.Firefox(options=firefox_options)
     driver.get(url)
@@ -179,12 +171,12 @@ def download_database_for_eys_gene(database_name:str, override:bool=False):
     time.sleep(30)
     driver.quit()
 
-    list_of_files = glob.glob(os.path.join(os.getcwd(), "..", "data", database_name, '*'))
+    list_of_files = glob.glob(os.path.join(os.getcwd(), "..", "data", database_name, "*"))
     latest_file = max(list_of_files, key=os.path.getctime)
     os.rename(latest_file, os_path)
 
 
-def download_selected_database_for_eys_gene(database_name:str, save_path:str="", override:bool=False):
+def download_selected_database_for_eys_gene(database_name: str, save_path: str = "", override: bool = False):
     """
     Calls a function to download a database.
 
@@ -215,14 +207,14 @@ def download_selected_database_for_eys_gene(database_name:str, save_path:str="",
         parse_lovd(save_path, save_path[:-4])
     elif database_name == "gnomad":
         download_data_from_gnomad_eys(save_path, override)
-    elif database_name == "clinvar": 
+    elif database_name == "clinvar":
         download_clinvar_database_for_eys_gene(save_path, override)
         # TODO parse clinvar data to extract only relevant information
     else:
         raise IndexError(f"Requested for {database_name} is not yet supported")
 
 
-def prepare_popmax_calculation(df:pd.DataFrame, pop_data:dict, name:str, pop_ids:list[str], index:int):
+def prepare_popmax_calculation(df: pd.DataFrame, pop_data: dict, name: str, pop_ids: list[str], index: int):
     """
     prepares the calculation of popmax and popmax population for a variant.
     genome and exome data of ac and an.
@@ -235,16 +227,16 @@ def prepare_popmax_calculation(df:pd.DataFrame, pop_data:dict, name:str, pop_ids
     """
 
     for pop_id in pop_ids:
-        df.loc[index, f'{name}_ac_{pop_id}'] = 0
-        df.loc[index, f'{name}_an_{pop_id}'] = 0
+        df.loc[index, f"{name}_ac_{pop_id}"] = 0
+        df.loc[index, f"{name}_an_{pop_id}"] = 0
     if isinstance(pop_data, list):
         for pop in pop_data:
-            variant_id = pop['id']
-            df.loc[index, f'{name}_ac_{variant_id}'] = pop['ac']
-            df.loc[index, f'{name}_an_{variant_id}'] = pop['an']
+            variant_id = pop["id"]
+            df.loc[index, f"{name}_ac_{variant_id}"] = pop["ac"]
+            df.loc[index, f"{name}_an_{variant_id}"] = pop["an"]
 
 
-def download_data_from_gnomad_eys(path:str=STORE_AS_GNOMAD, override:bool=False):
+def download_data_from_gnomad_eys(path: str = STORE_AS_GNOMAD, override: bool = False):
     """
     Requests gnomAD API for data about a specific gene containing:
     - variant_id
@@ -269,7 +261,7 @@ def download_data_from_gnomad_eys(path:str=STORE_AS_GNOMAD, override:bool=False)
         logging.info("The file at %s already exists.", path)
         return
 
-    url = 'https://gnomad.broadinstitute.org/api'
+    url = "https://gnomad.broadinstitute.org/api"
     query = f"""
     query{{
       gene(gene_symbol: "EYS", reference_genome: GRCh38) {{
@@ -310,71 +302,79 @@ def download_data_from_gnomad_eys(path:str=STORE_AS_GNOMAD, override:bool=False)
     }}
     """
 
-    response = requests.post(url, json={'query': query}, timeout=300)  # timeout set to 5 minutes
+    response = requests.post(url, json={"query": query}, timeout=300)  # timeout set to 5 minutes
 
     if response.status_code != 200:
         if not os.path.isfile(path):
-            f = open('logs.txt', 'x')
+            f = open("logs.txt", "x")
             f.write(response.text)
             logging.error("Error while downloading data from gnomAD API. Check logs.txt for more information.")
         else:
-            f = open('logs.txt', 'a')
+            f = open("logs.txt", "a")
             f.write(response.text)
             logging.error("Error while downloading data from gnomAD API. Check logs.txt for more information.")
 
-    data = response.json()['data']['gene']['variants']
+    data = response.json()["data"]["gene"]["variants"]
 
     df = pd.json_normalize(data)
 
-    df.loc[:, 'total_ac'] = df.loc[:, 'exome.ac'].fillna(0) + df.loc[:, 'genome.ac'].fillna(0)
-    df.loc[:, 'total_an'] = df.loc[:, 'exome.an'].fillna(0) + df.loc[:, 'genome.an'].fillna(0)
+    df.loc[:, "total_ac"] = df["exome.ac"].fillna(0) + df["genome.ac"].fillna(0)
+    df.loc[:, "total_an"] = df["exome.an"].fillna(0) + df["genome.an"].fillna(0)
 
-    df.loc[:, 'HGVS Consequence'] = df.loc[:, 'hgvsc'].fillna(0)  # cDNA change
-    df.loc[:, 'Protein Consequence'] = df.loc[:, 'hgvsp'].fillna(0)  # Protein change
+    df.loc[:, "HGVS Consequence"] = df["hgvsc"].fillna(0)  # cDNA change
+    df.loc[:, "Protein Consequence"] = df["hgvsp"].fillna(0)  # Protein change
 
-    df.loc[:, 'Allele Frequency'] = df.loc[:, 'total_ac'] / df.loc[:, 'total_an']
-    df.loc[:, 'Homozygote Count'] = df.loc[:, 'exome.ac_hom'].fillna(0) + df.loc[:, 'genome.ac_hom'].fillna(0)
-    exome_populations = df.loc[:, 'exome.populations']
-    genome_populations = df.loc[:, 'genome.populations']
-    population_ids = ['afr', 'eas', 'asj', 'sas', 'nfe', 'fin', 'mid', 'amr', 'ami', 'remaining']
+    df.loc[:, "Allele Frequency"] = df["total_ac"] / df["total_an"]
+    df.loc[:, "Homozygote Count"] = df["exome.ac_hom"].fillna(0) + df["genome.ac_hom"].fillna(0)
+    exome_populations = df["exome.populations"]
+    genome_populations = df["genome.populations"]
+    population_ids = ["afr", "eas", "asj", "sas", "nfe", "fin", "mid", "amr", "ami", "remaining"]
 
     for i in range(len(exome_populations)):
         exome_pop = exome_populations[i]
-        prepare_popmax_calculation(df, exome_pop, 'exome', population_ids, i)
+        prepare_popmax_calculation(df, exome_pop, "exome", population_ids, i)
         genome_pop = genome_populations[i]
-        prepare_popmax_calculation(df, genome_pop, 'genome', population_ids, i)
+        prepare_popmax_calculation(df, genome_pop, "genome", population_ids, i)
 
     for population_id in population_ids:
-        df.loc[:, f'Allele_Frequency_{population_id}'] = (
-               (df.loc[:, f'exome_ac_{population_id}'].fillna(0) + df.loc[:, f'genome_ac_{population_id}'].fillna(0)) /
-               (df.loc[:, f'exome_an_{population_id}'].fillna(0) + df.loc[:, f'genome_an_{population_id}'].fillna(0)))
+        df.loc[:, f"Allele_Frequency_{population_id}"] = (
+            df.loc[:, f"exome_ac_{population_id}"].fillna(0) + df.loc[:, f"genome_ac_{population_id}"].fillna(0)
+        ) / (df.loc[:, f"exome_an_{population_id}"].fillna(0) + df.loc[:, f"genome_an_{population_id}"].fillna(0))
     population_mapping = {
-            'afr': 'African/African American',
-            'eas': 'East Asian',
-            'asj': 'Ashkenazi Jew',
-            'sas': 'South Asian',
-            'nfe': 'European (non-Finnish)',
-            'fin': 'European (Finnish)',
-            'mid': 'Middle Eastern',
-            'amr': 'Admixed American',
-            'ami': "Amish",
-            'remaining': 'Remaining',
-            '': ''
-        }
+        "afr": "African/African American",
+        "eas": "East Asian",
+        "asj": "Ashkenazi Jew",
+        "sas": "South Asian",
+        "nfe": "European (non-Finnish)",
+        "fin": "European (Finnish)",
+        "mid": "Middle Eastern",
+        "amr": "Admixed American",
+        "ami": "Amish",
+        "remaining": "Remaining",
+        "": "",
+    }
 
     for i in range(df.shape[0]):
         max_pop = 0
-        max_id = ''
+        max_id = ""
         for population_id in population_ids:
-            if df.loc[i, f'Allele_Frequency_{population_id}'] > max_pop:
-                max_pop = df.loc[i, f'Allele_Frequency_{population_id}']
+            if df.loc[i, f"Allele_Frequency_{population_id}"] > max_pop:
+                max_pop = df.loc[i, f"Allele_Frequency_{population_id}"]
                 max_id = population_id
-        df.loc[i, 'Popmax'] = max_pop
-        df.loc[i, 'Popmax population'] = population_mapping[max_id]
-    not_to_drop = ['Popmax', 'Popmax population', 'Homozygote Count', 'Allele Frequency',
-                   'variant_id', 'cDNA change', 'Protein change', 'gnomAD ID']
+        df.loc[i, "Popmax"] = max_pop
+        df.loc[i, "Popmax population"] = population_mapping[max_id]
+    not_to_drop = [
+        "Popmax",
+        "Popmax population",
+        "Homozygote Count",
+        "Allele Frequency",
+        "variant_id",
+        "cDNA change",
+        "Protein change",
+        "gnomAD ID",
+    ]
 
-    df.rename(columns={'variant_id': 'gnomAD ID'})
+    df.rename(columns={"variant_id": "gnomAD ID"})
 
     df = df.filter(not_to_drop, axis="columns")
 
@@ -382,7 +382,7 @@ def download_data_from_gnomad_eys(path:str=STORE_AS_GNOMAD, override:bool=False)
         df.to_csv(path, index=False)
 
 
-def download_clinvar_database_for_eys_gene(save_to:str = STORE_AS_CLINVAR, override:bool=False):
+def download_clinvar_database_for_eys_gene(save_to: str = STORE_AS_CLINVAR, override: bool = False):
     """
     Gets file from url and saves it into provided path. Overrides, if override is True.
 
@@ -401,7 +401,7 @@ def download_clinvar_database_for_eys_gene(save_to:str = STORE_AS_CLINVAR, overr
         return
 
     # Download identifiers for the gene EYS
-    url = construct_clinvar_gene_identifiers_url(gene = "EYS", max = 5000)
+    url = construct_clinvar_gene_identifiers_url(gene="EYS", max=5000)
 
     try:
         response = requests.get(url, timeout=10)
@@ -409,41 +409,53 @@ def download_clinvar_database_for_eys_gene(save_to:str = STORE_AS_CLINVAR, overr
         raise DownloadError(f"Error while downloading file from {url}") from e
 
     if response.status_code != 200:
-        raise BadResponseException(f"Bad response from {url}."
-                                   f" Status code: {response.status_code}")
+        raise BadResponseException(f"Bad response from {url}." f" Status code: {response.status_code}")
 
     # Parse identifiers XML
     root = ET.fromstring(response.text)
-    identifiers = [element.text for element in root.findall('IdList/Id')]
+    identifiers: List[str] = [element.text for element in root.findall("IdList/Id") if element.text is not None]
 
     # Define columns and rows
     columns = [
-        "Name", "Gene(s)", "Protein change", "Condition(s)", "Accession",
-        "GRCh37Chromosome", "GRCh37Location", "GRCh38Chromosome",
-        "GRCh38Location", "VariationID", "AlleleID(s)", "dbSNP ID","Canonical SPDI",
-        "Variant type", "Molecular consequence", "Germline classification",
-        "Germline review status","Germline date last evaluated"
+        "Name",
+        "Gene(s)",
+        "Protein change",
+        "Condition(s)",
+        "Accession",
+        "GRCh37Chromosome",
+        "GRCh37Location",
+        "GRCh38Chromosome",
+        "GRCh38Location",
+        "VariationID",
+        "AlleleID(s)",
+        "dbSNP ID",
+        "Canonical SPDI",
+        "Variant type",
+        "Molecular consequence",
+        "Germline classification",
+        "Germline review status",
+        "Germline date last evaluated",
     ]
-    rows = []
+    rows: List[Any] = []
 
-    BATCH_SIZE: int = 500
+    # NCBI recommends batches of 200 or less for GET requests to avoid URL length limits
+    BATCH_SIZE: int = 200
     # Download summaries for the identifiers in batches
-    for i in range (0, len(identifiers), BATCH_SIZE):
-        batch = identifiers[i:i + BATCH_SIZE]
-        url = contruct_clinvar_summaries_url(identifiers = batch)
+    for i in range(0, len(identifiers), BATCH_SIZE):
+        batch = identifiers[i : i + BATCH_SIZE]
+        url = contruct_clinvar_summaries_url(identifiers=batch)
         try:
             response = requests.get(url, timeout=10)
         except RequestException as e:
             raise DownloadError(f"Error while downloading file from {url}") from e
 
         if response.status_code != 200:
-            raise BadResponseException(f"Bad response from {url}."
-                                        f" Status code: {response.status_code}")
-        
+            raise BadResponseException(f"Bad response from {url}." f" Status code: {response.status_code}")
+
         # Parse summaries XML
         root = ET.fromstring(response.text)
         variation_archives = root.findall("VariationArchive")
-        parse_clinvar(rows, variation_archives) 
+        parse_clinvar(rows, variation_archives)
 
     # Write the data to a CSV file
     write_to_csv(columns, rows, save_to)

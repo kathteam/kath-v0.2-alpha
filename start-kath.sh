@@ -5,18 +5,16 @@
 
 set -e  # Exit on error
 
-# Get script directory (works in bash)
-if [ -n "${BASH_SOURCE[0]}" ]; then
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-else
-    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-fi
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-KATH_IMAGE="cpu64/kath:final-amd64-fixed"
+KATH_IMAGE="cpu64/kath:latest"
 CONTAINER_NAME="kath"
 FRONTEND_PORT=5173
 BACKEND_PORT=8080
 WORKSPACE_DIR="$SCRIPT_DIR/data"
+DATABASE_DIR="$SCRIPT_DIR/database"
+WORKSPACE_UUID="default"
 
 # Color output
 RED='\033[0;31m'
@@ -52,7 +50,7 @@ print_header() {
 
 # Check if Docker is installed
 check_docker_installed() {
-    if command -v docker &>/dev/null; then
+    if command -v docker > /dev/null 2>&1; then
         return 0
     else
         return 1
@@ -61,7 +59,7 @@ check_docker_installed() {
 
 # Check if Docker daemon is running
 check_docker_running() {
-    if docker info &>/dev/null; then
+    if docker info > /dev/null 2>&1; then
         return 0
     else
         return 1
@@ -72,7 +70,7 @@ check_docker_running() {
 install_docker_mac() {
     print_info "Installing Docker Desktop for macOS..."
 
-    if ! command -v brew &>/dev/null; then
+    if ! command -v brew > /dev/null 2>&1; then
         print_info "Homebrew not found. Installing Homebrew first..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
@@ -127,13 +125,13 @@ wait_for_docker() {
 stop_existing_container() {
     if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
         print_info "Stopping existing KATH container..."
-        docker stop "$CONTAINER_NAME" &>/dev/null || true
-        docker rm "$CONTAINER_NAME" &>/dev/null || true
+        docker stop "$CONTAINER_NAME" > /dev/null 2>&1 || true
+        docker rm "$CONTAINER_NAME" > /dev/null 2>&1 || true
         print_success "Existing container removed"
     fi
 }
 
-# Create workspace directory
+# Create workspace and database directories
 setup_workspace() {
     if [ ! -d "$WORKSPACE_DIR" ]; then
         print_info "Creating workspace directory at $WORKSPACE_DIR..."
@@ -142,16 +140,40 @@ setup_workspace() {
     else
         print_info "Workspace directory already exists: $WORKSPACE_DIR"
     fi
+
+    if [ ! -d "$DATABASE_DIR" ]; then
+        print_info "Creating database directory at $DATABASE_DIR..."
+        mkdir -p "$DATABASE_DIR"
+        print_success "Database directory created"
+    else
+        print_info "Database directory already exists: $DATABASE_DIR"
+    fi
 }
 
-# Pull Docker image
+# Check if Docker image exists locally
+check_image_exists() {
+    if docker inspect "$KATH_IMAGE" > /dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Pull Docker image (only if not available locally)
 pull_docker_image() {
-    print_info "Pulling KATH Docker image (this may take a few minutes)..."
+    if check_image_exists; then
+        print_success "KATH Docker image found locally"
+        return 0
+    fi
+
+    print_info "KATH Docker image not found locally"
+    print_info "Pulling KATH Docker image from registry (this may take a few minutes)..."
     if docker pull "$KATH_IMAGE"; then
         print_success "Docker image downloaded successfully"
         return 0
     else
-        print_error "Failed to pull Docker image"
+        print_error "Failed to pull Docker image from registry"
+        print_error "Please build the image first using: ./build-kath-complete.sh"
         return 1
     fi
 }
@@ -161,15 +183,18 @@ pull_docker_image() {
 run_container() {
     print_info "Starting KATH container..."
 
-    # Run container with proper flags matching working example
+    # Run container with proper volume mounts for workspace and database
     docker run \
         --name "$CONTAINER_NAME" \
-        -v "$WORKSPACE_DIR:/kath/app/back_end/src/workspace/8d8ac610-566d-4ef0-9c22-186b2a5ed793" \
+        -v "$WORKSPACE_DIR:/kath/app/back_end/src/workspace/$WORKSPACE_UUID" \
+        -v "$DATABASE_DIR:/kath/app/back_end/instance" \
         -it \
         --rm \
         -p "${BACKEND_PORT}:8080" \
         -p "${FRONTEND_PORT}:5173" \
         -e DOMAIN=localhost \
+        -e USE_DATABASE_BACKEND=true \
+        -e DATABASE_PATH=instance/kath.db \
         "$KATH_IMAGE"
 
     if [ $? -eq 0 ]; then
@@ -200,14 +225,17 @@ main() {
     if ! check_docker_installed; then
         print_warning "Docker is not installed"
 
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            install_docker_mac || {
-                print_error "Failed to install Docker. Please install manually from https://www.docker.com/products/docker-desktop"
-                exit 1
-            }
-        else
-            install_docker_linux
-        fi
+        case "$OSTYPE" in
+            darwin*)
+                install_docker_mac || {
+                    print_error "Failed to install Docker. Please install manually from https://www.docker.com/products/docker-desktop"
+                    exit 1
+                }
+                ;;
+            *)
+                install_docker_linux
+                ;;
+        esac
     else
         print_success "Docker is installed"
     fi
@@ -216,21 +244,24 @@ main() {
     if ! check_docker_running; then
         print_warning "Docker is not running"
 
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            print_info "Starting Docker Desktop..."
-            open -a Docker
-            wait_for_docker || {
-                print_error "Failed to start Docker"
-                exit 1
-            }
-        else
-            print_info "Starting Docker daemon..."
-            sudo systemctl start docker || {
-                print_error "Failed to start Docker. Please start it manually."
-                exit 1
-            }
-            wait_for_docker || exit 1
-        fi
+        case "$OSTYPE" in
+            darwin*)
+                print_info "Starting Docker Desktop..."
+                open -a Docker
+                wait_for_docker || {
+                    print_error "Failed to start Docker"
+                    exit 1
+                }
+                ;;
+            *)
+                print_info "Starting Docker daemon..."
+                sudo systemctl start docker || {
+                    print_error "Failed to start Docker. Please start it manually."
+                    exit 1
+                }
+                wait_for_docker || exit 1
+                ;;
+        esac
     else
         print_success "Docker is running"
     fi
@@ -244,20 +275,72 @@ main() {
     # Pull latest image
     pull_docker_image || exit 1
 
-    # Open browser in background
-    (
-        sleep 10
+    # Start Docker container and open browser in background
+    open_browser_bg() {
+        sleep 15
         print_info "Opening browser at http://localhost:${FRONTEND_PORT}..."
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            open "http://localhost:${FRONTEND_PORT}" 2>/dev/null || true
-        elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            if command -v xdg-open &>/dev/null; then
-                xdg-open "http://localhost:${FRONTEND_PORT}" 2>/dev/null || true
-            elif command -v gnome-open &>/dev/null; then
-                gnome-open "http://localhost:${FRONTEND_PORT}" 2>/dev/null || true
-            fi
-        fi
-    ) &
+
+        # Try to open browser on host system using appropriate method
+        case "$OSTYPE" in
+            darwin*)
+                # macOS - use open command which will use default browser
+                if command -v open > /dev/null 2>&1; then
+                    open "http://localhost:${FRONTEND_PORT}" > /dev/null 2>&1 || {
+                        print_error "Failed to open browser. Please visit: http://localhost:${FRONTEND_PORT}"
+                        return 1
+                    }
+                else
+                    print_error "Browser not found. Please visit: http://localhost:${FRONTEND_PORT}"
+                    return 1
+                fi
+                ;;
+            linux-gnu* | linux*)
+                # Linux - try multiple browsers in order of preference
+                opened=false
+                # POSIX-compatible browser list (space-separated string)
+                browsers="xdg-open firefox brave brave-browser chromium chromium-browser google-chrome chrome microsoft-edge edge"
+
+                for browser in $browsers; do
+                    if command -v "$browser" > /dev/null 2>&1; then
+                        print_info "Found browser: $browser"
+                        if [ "$browser" = "xdg-open" ]; then
+                            xdg-open "http://localhost:${FRONTEND_PORT}" > /dev/null 2>&1 && opened=true && break
+                        else
+                            "$browser" "http://localhost:${FRONTEND_PORT}" > /dev/null 2>&1 & opened=true && break
+                        fi
+                    fi
+                done
+
+                if [ "$opened" = false ]; then
+                    print_error "No browser found. Please visit: http://localhost:${FRONTEND_PORT}"
+                    return 1
+                fi
+                ;;
+            *)
+                # Unknown OS - still try to open with common commands
+                opened=false
+                # POSIX-compatible browser list (space-separated string)
+                browsers="open xdg-open firefox brave chromium google-chrome edge"
+
+                for browser in $browsers; do
+                    if command -v "$browser" > /dev/null 2>&1; then
+                        print_info "Found browser: $browser"
+                        "$browser" "http://localhost:${FRONTEND_PORT}" > /dev/null 2>&1 & opened=true && break
+                    fi
+                done
+
+                if [ "$opened" = false ]; then
+                    print_warning "Unknown OS type. Please manually visit: http://localhost:${FRONTEND_PORT}"
+                    return 1
+                fi
+                ;;
+        esac
+
+        print_success "Browser opened successfully"
+    }
+
+    # Run browser opening in background
+    open_browser_bg &
 
     # Show access information
     echo ""
@@ -265,7 +348,11 @@ main() {
     echo ""
     echo "  Frontend URL: http://localhost:${FRONTEND_PORT}"
     echo "  Backend API:  http://localhost:${BACKEND_PORT}"
-    echo "  Workspace:    $WORKSPACE_DIR"
+    echo "  Health Check: http://localhost:${BACKEND_PORT}/api/v1/monitoring/health"
+    echo ""
+    echo "  Data Directories:"
+    echo "    Workspace:  $WORKSPACE_DIR"
+    echo "    Database:   $DATABASE_DIR"
     echo ""
     print_info "Press Ctrl+C to stop KATH and exit"
     echo ""

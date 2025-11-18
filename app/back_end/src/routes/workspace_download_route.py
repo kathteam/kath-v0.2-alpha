@@ -9,26 +9,19 @@ and saving it to the user's workspace.
 
 import os
 import time  # TODO: Remove this import once the download logic is implemented
-from flask import Blueprint, request, jsonify
 
-from ..setup.extensions import logger
-from ..utils.helpers import socketio_emit_to_user_session
-from ..utils.exceptions import UnexpectedError
-from ..constants import (
-    WORKSPACE_DOWNLOAD_ROUTE,
-    WORKSPACE_DIR,
-    CONSOLE_FEEDBACK_EVENT,
-    WORKSPACE_UPDATE_FEEDBACK_EVENT,
-)
+from flask import Blueprint, jsonify, request
 
+from ..constants import CONSOLE_FEEDBACK_EVENT, WORKSPACE_DIR, WORKSPACE_DOWNLOAD_ROUTE, WORKSPACE_UPDATE_FEEDBACK_EVENT
 from ..data.downloading import download_selected_database_for_eys_gene
+from ..setup.extensions import logger
+from ..utils.exceptions import UnexpectedError
+from ..utils.helpers import socketio_emit_to_user_session
 
 workspace_download_route_bp = Blueprint("workspace_download_route", __name__)
 
 
-@workspace_download_route_bp.route(
-    f"{WORKSPACE_DOWNLOAD_ROUTE}/<path:relative_path>", methods=["GET"]
-)
+@workspace_download_route_bp.route(f"{WORKSPACE_DOWNLOAD_ROUTE}/<path:relative_path>", methods=["GET"])
 def get_workspace_download(relative_path):
     """
     Download data for a specific gene from specified database and save it to the user's workspace.
@@ -42,15 +35,9 @@ def get_workspace_download(relative_path):
     sid = request.headers.get("sid")
 
     # Check if 'override', 'gene' and 'source' are provided
-    if (
-        "override" not in request.args
-        or "gene" not in request.args
-        or "source" not in request.args
-    ):
+    if "override" not in request.args or "gene" not in request.args or "source" not in request.args:
         return (
-            jsonify(
-                {"error": "'override', 'gene' and 'source' parameters are required"}
-            ),
+            jsonify({"error": "'override', 'gene' and 'source' parameters are required"}),
             400,
         )
 
@@ -106,9 +93,7 @@ def get_workspace_download(relative_path):
         )
 
     except FileNotFoundError as e:
-        logger.error(
-            "FileNotFoundError: %s while downloading %s %s", e, source, destination_path
-        )
+        logger.error("FileNotFoundError: %s while downloading %s %s", e, source, destination_path)
         # Emit a feedback to the user's console
         socketio_emit_to_user_session(
             CONSOLE_FEEDBACK_EVENT,
@@ -121,9 +106,7 @@ def get_workspace_download(relative_path):
         )
         return jsonify({"error": "Requested file not found"}), 404
     except PermissionError as e:
-        logger.error(
-            "PermissionError: %s while downloading %s %s", e, source, destination_path
-        )
+        logger.error("PermissionError: %s while downloading %s %s", e, source, destination_path)
         # Emit a feedback to the user's console
         socketio_emit_to_user_session(
             CONSOLE_FEEDBACK_EVENT,
@@ -147,8 +130,7 @@ def get_workspace_download(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e.message} while downloading {source} "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e.message} while downloading {source} " + f"{destination_path}",
             },
             uuid,
             sid,
@@ -166,8 +148,7 @@ def get_workspace_download(relative_path):
             CONSOLE_FEEDBACK_EVENT,
             {
                 "type": "errr",
-                "message": f"UnexpectedError: {e} while downloading {source} "
-                + f"{destination_path}",
+                "message": f"UnexpectedError: {e} while downloading {source} " + f"{destination_path}",
             },
             uuid,
             sid,

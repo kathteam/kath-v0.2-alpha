@@ -1,5 +1,7 @@
 export { ConsoleFeedbackTypes } from './consoleFeedback';
 export type { ConsoleFeedback } from './consoleFeedback';
+export type { ColumnAggregation } from './columnAggregation';
+export { EditorColumnMenuAggregationActions } from './editorColumnMenuAggregationActions';
 export { GenesEnum, GenesEnumArray } from './enums/genesEnum';
 export { SortEnum } from './enums/sortEnum';
 export type { FileDataRequestDTO, FileDataResponseDTO } from './fileData';

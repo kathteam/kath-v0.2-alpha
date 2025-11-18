@@ -1,0 +1,61 @@
+Bootstrap: docker
+From: cpu64/kath:latest
+
+# Singularity container recipe for KATH Genetic Analysis Tool
+#
+# This recipe converts the Docker image to Singularity format.
+# Singularity is commonly used in HPC environments.
+#
+# Build with:
+#   singularity build kath.sif Singularity.recipe
+#
+# Run with:
+#   singularity run kath.sif
+#   singularity exec kath.sif /path/to/command
+
+%labels
+    Author "KATH Development Team"
+    Version "0.2.0"
+    Description "KATH Genetic Analysis Tool - Singularity Container"
+
+%environment
+    export PYTHONUNBUFFERED=1
+    export DATABASE_PATH=instance/kath.db
+    export NETWORK_CONFIG_PATH=/config/network_config.yaml
+    export PORT=5173
+    export DOMAIN=localhost
+    export PATH="/opt/firefox:${PATH}"
+
+%post
+    # Ensure permission for config directory
+    mkdir -p /config
+    chmod 777 /config
+
+%runscript
+    # Default entrypoint - start the application
+    exec ./run.sh
+
+%startscript
+    # For singularity instance start
+    ./run.sh
+
+%help
+    KATH Genetic Analysis Tool - Singularity Container
+
+    This container provides a complete genetic analysis platform with support for:
+    - SpliceAI: Splice site prediction
+    - CADD: Variant effect prediction
+    - Multiple genetic analysis tools
+
+    Usage:
+        singularity run kath.sif
+            Start the application with default settings
+
+        singularity run kath.sif --help
+            Show help information
+
+        NETWORK_CONFIG_PATH=/path/to/config.yaml singularity run kath.sif
+            Use custom network configuration
+
+        singularity exec kath.sif python -m app.back_end.run
+            Run a custom command in the container

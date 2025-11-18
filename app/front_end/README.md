@@ -26,7 +26,7 @@ This guide provides instructions on setting up and running a Vite-based developm
 ## Step 2: Set Up Your Development Environment
 
 1. **Open VS Code:**:
-    - Install Visual Studio Code if you haven’t already. Download it from [here](https://code.visualstudio.com/).
+    - Install Visual Studio Code if you havent already. Download it from [here](https://code.visualstudio.com/).
 
 2. **Open Your Project Folder:**
    - In the VS Code window, open the Command Palette again (`Ctrl+Shift+P`).

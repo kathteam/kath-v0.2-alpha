@@ -18,7 +18,6 @@ Dependencies:
 
 import os
 
-
 # Project paths
 BASE_DIR = os.path.dirname(os.path.abspath(__name__))
 SRC_DIR = os.path.join(BASE_DIR, "src")

@@ -18,7 +18,7 @@
 
 ## System Overview
 
-KATH (Kaunas Advanced Tools for Health) is a web-based genetic analysis platform designed for analyzing gene variation data from LOVD, GNOMAD, and CLINVAR databases. The system provides:
+KATH is a web-based genetic analysis platform designed for analyzing gene variation data from LOVD, GNOMAD, and CLINVAR databases. The system provides:
 
 - **File-based data management** (CSV/TXT files)
 - **DNA analysis tool integration** (SpliceAI, CADD, REVEL)
@@ -29,45 +29,45 @@ KATH (Kaunas Advanced Tools for Health) is a web-based genetic analysis platform
 ### High-Level Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         User Browser                        │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  React Frontend (Port 5173)                           │  │
-│  │  - Material-UI Components                             │  │
-│  │  - Context-based State Management                     │  │
-│  │  - Axios (HTTP) + Socket.IO (WebSocket)              │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              │ HTTP/WebSocket
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                   Flask Backend (Port 8080)                 │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  Flask Application                                     │  │
-│  │  - REST API Endpoints (/api/v1)                       │  │
-│  │  - Socket.IO Event Handlers                           │  │
-│  │  - Gunicorn + Gevent Workers                          │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                              │                              │
-│         ┌────────────────────┼────────────────────┐         │
-│         │                    │                    │         │
-│         ↓                    ↓                    ↓         │
-│  ┌────────────┐      ┌────────────┐      ┌────────────┐    │
-│  │   Tools    │      │    Data    │      │   Redis    │    │
-│  │  SpliceAI  │      │  Processor │      │  Session   │    │
-│  │   CADD     │      │  pandas    │      │  Manager   │    │
-│  │   REVEL    │      │   CSV I/O  │      │            │    │
-│  └────────────┘      └────────────┘      └────────────┘    │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Filesystem Storage                       │
-│  - User workspaces (UUID-based directories)                 │
-│  - CSV data files with pagination support                   │
-│  - Reference files (FASTA, REVEL database)                  │
-└─────────────────────────────────────────────────────────────┘
+
+                         User Browser                        
+    
+    React Frontend (Port 5173)                             
+    - Material-UI Components                               
+    - Context-based State Management                       
+    - Axios (HTTP) + Socket.IO (WebSocket)                
+    
+
+                              
+                               HTTP/WebSocket
+                              
+
+                   Flask Backend (Port 8080)                 
+    
+    Flask Application                                       
+    - REST API Endpoints (/api/v1)                         
+    - Socket.IO Event Handlers                             
+    - Gunicorn + Gevent Workers                            
+    
+                                                            
+                  
+                                                          
+                                                          
+                  
+     Tools              Data             Redis        
+    SpliceAI          Processor         Session       
+     CADD             pandas            Manager       
+     REVEL             CSV I/O                        
+                  
+
+                              
+                              
+
+                    Filesystem Storage                       
+  - User workspaces (UUID-based directories)                 
+  - CSV data files with pagination support                   
+  - Reference files (FASTA, REVEL database)                  
+
 ```
 
 ---
@@ -121,76 +121,76 @@ KATH (Kaunas Advanced Tools for Health) is a web-based genetic analysis platform
 
 ```
 app/back_end/
-├── src/
-│   ├── __init__.py              # App factory (create_app)
-│   ├── config.py                # Environment configuration
-│   ├── constants.py             # API routes and constants
-│   │
-│   ├── routes/                  # API endpoint blueprints
-│   │   ├── workspace_route.py           # File CRUD operations
-│   │   ├── workspace_apply_route.py     # Tool applications
-│   │   ├── workspace_merge_route.py     # Data merging
-│   │   ├── workspace_aggregate_route.py # Aggregations
-│   │   ├── workspace_download_route.py  # External data downloads
-│   │   ├── workspace_import_route.py    # File imports
-│   │   └── workspace_export_route.py    # File exports
-│   │
-│   ├── tools/                   # DNA analysis integrations
-│   │   ├── spliceai.py         # SpliceAI wrapper
-│   │   ├── cadd.py             # CADD API client
-│   │   └── revel.py            # REVEL database queries
-│   │
-│   ├── data/                    # Data processing modules
-│   │   ├── downloading.py      # External data fetching
-│   │   ├── refactoring.py      # Data transformation
-│   │   └── helpers.py          # Data utilities
-│   │
-│   ├── utils/                   # Shared utilities
-│   │   ├── exceptions.py       # Custom exceptions
-│   │   ├── helpers.py          # General helpers
-│   │   ├── logger.py           # Logging configuration
-│   │   └── socket_manager.py   # WebSocket session tracking
-│   │
-│   ├── setup/                   # App initialization
-│   │   ├── extensions.py       # Flask extensions setup
-│   │   ├── router.py           # Blueprint registration
-│   │   └── eventer.py          # Socket.IO event handlers
-│   │
-│   └── workspace/               # User workspaces
-│       └── template/            # Template workspace files
-│
-├── run.py                       # Application entry point
-├── gunicorn_config.py          # Gunicorn configuration
-├── requirements.txt            # Python dependencies
-└── .env.development            # Environment variables
+ src/
+    __init__.py              # App factory (create_app)
+    config.py                # Environment configuration
+    constants.py             # API routes and constants
+   
+    routes/                  # API endpoint blueprints
+       workspace_route.py           # File CRUD operations
+       workspace_apply_route.py     # Tool applications
+       workspace_merge_route.py     # Data merging
+       workspace_aggregate_route.py # Aggregations
+       workspace_download_route.py  # External data downloads
+       workspace_import_route.py    # File imports
+       workspace_export_route.py    # File exports
+   
+    tools/                   # DNA analysis integrations
+       spliceai.py         # SpliceAI wrapper
+       cadd.py             # CADD API client
+       revel.py            # REVEL database queries
+   
+    data/                    # Data processing modules
+       downloading.py      # External data fetching
+       refactoring.py      # Data transformation
+       helpers.py          # Data utilities
+   
+    utils/                   # Shared utilities
+       exceptions.py       # Custom exceptions
+       helpers.py          # General helpers
+       logger.py           # Logging configuration
+       socket_manager.py   # WebSocket session tracking
+   
+    setup/                   # App initialization
+       extensions.py       # Flask extensions setup
+       router.py           # Blueprint registration
+       eventer.py          # Socket.IO event handlers
+   
+    workspace/               # User workspaces
+        template/            # Template workspace files
+
+ run.py                       # Application entry point
+ gunicorn_config.py          # Gunicorn configuration
+ requirements.txt            # Python dependencies
+ .env.development            # Environment variables
 ```
 
 ### Request Flow
 
 ```
 1. HTTP Request (Client)
-   │
-   ├─→ Flask Router
-   │   │
-   │   ├─→ Blueprint Route Handler
-   │   │   │
-   │   │   ├─→ Validate Headers (UUID, SID)
-   │   │   │
-   │   │   ├─→ Emit Socket.IO "console_feedback" (start)
-   │   │   │
-   │   │   ├─→ Business Logic
-   │   │   │   ├─→ File I/O (pandas)
-   │   │   │   ├─→ Tool Execution (SpliceAI, CADD, REVEL)
-   │   │   │   └─→ Data Processing
-   │   │   │
-   │   │   ├─→ Emit Socket.IO "console_feedback" (success/error)
-   │   │   │
-   │   │   └─→ Return JSON Response
-   │   │
-   │   └─→ Error Handler
-   │       └─→ Return Error JSON + HTTP Status
-   │
-   └─→ Response (Client)
+   
+    Flask Router
+      
+       Blueprint Route Handler
+         
+          Validate Headers (UUID, SID)
+         
+          Emit Socket.IO "console_feedback" (start)
+         
+          Business Logic
+             File I/O (pandas)
+             Tool Execution (SpliceAI, CADD, REVEL)
+             Data Processing
+         
+          Emit Socket.IO "console_feedback" (success/error)
+         
+          Return JSON Response
+      
+       Error Handler
+           Return Error JSON + HTTP Status
+   
+    Response (Client)
 ```
 
 ### API Endpoints
@@ -198,6 +198,7 @@ app/back_end/
 All endpoints are prefixed with `/api/v1`:
 
 #### Workspace Management
+
 - `GET /workspace` - Get file tree structure
 - `GET /workspace/file/<path>` - Get file content with pagination
 - `PUT /workspace/file/<path>` - Save file content
@@ -206,6 +207,7 @@ All endpoints are prefixed with `/api/v1`:
 - `PUT /workspace/delete/<path>` - Delete file/directory
 
 #### Data Operations
+
 - `POST /workspace/import[/<path>]` - Import CSV/TXT files
 - `GET /workspace/export/<path>` - Export/download files
 - `GET /workspace/merge/{type}/<path>` - Merge datasets
@@ -213,6 +215,7 @@ All endpoints are prefixed with `/api/v1`:
 - `GET /workspace/download/<path>` - Download from external DBs
 
 #### Tool Applications
+
 - `GET /workspace/apply/spliceai/<path>` - Run SpliceAI
 - `GET /workspace/apply/cadd/<path>` - Run CADD
 - `GET /workspace/apply/revel/<path>` - Run REVEL
@@ -221,7 +224,7 @@ All endpoints are prefixed with `/api/v1`:
 
 ```python
 # Redis-based WebSocket session tracking
-socket_id_map:{uuid} → Set of session IDs
+socket_id_map:{uuid}  Set of session IDs
 
 # On connect:
 redis.sadd(f"socket_id_map:{uuid}", socket.id)
@@ -238,23 +241,26 @@ for sid in sids:
 ### Data Storage (Current)
 
 **Workspace Structure:**
+
 ```
 workspace/{uuid}/
-├── file1.csv
-├── folder1/
-│   ├── file2.csv
-│   └── file3.txt
-└── results/
-    └── analysis.csv
+ file1.csv
+ folder1/
+    file2.csv
+    file3.txt
+ results/
+     analysis.csv
 ```
 
 **CSV File Format:**
+
 - First row: column headers
 - Subsequent rows: data
 - Pagination: read chunks with pandas
 - Filtering: temporary `.index` files
 
 **Reference Data:**
+
 - `workspace/fasta/hg38.fa` - Genome reference (SpliceAI)
 - `workspace/revel/revel_with_transcript_ids.db` - REVEL SQLite database
 
@@ -266,82 +272,82 @@ workspace/{uuid}/
 
 ```
 app/front_end/src/
-├── app/
-│   ├── index.tsx               # App root component
-│   ├── provider.tsx            # Context providers wrapper
-│   ├── router.tsx              # Route configuration
-│   └── routes/                 # Page components
-│       ├── home.tsx
-│       └── notFound.tsx
-│
-├── features/
-│   └── editor/                 # Main editor feature
-│       ├── index.tsx           # Editor layout
-│       ├── components/         # Feature components
-│       │   ├── fileTreeView/   # File browser
-│       │   ├── editorView/     # Data grid
-│       │   ├── toolbarView/    # Toolbar with tools
-│       │   ├── consoleView/    # Real-time console
-│       │   └── filebarView/    # File tabs
-│       ├── stores/             # Feature contexts
-│       │   ├── workspaceContextProvider.tsx
-│       │   └── toolbarContextProvider.tsx
-│       ├── hooks/              # Feature hooks
-│       ├── types/              # Feature types
-│       └── utils/              # Feature utilities
-│
-├── components/                 # Shared components
-│   ├── dialogs/               # Modal dialogs
-│   │   ├── settingsDialog/
-│   │   ├── feedbackDialog/
-│   │   └── shortcutsDialog/
-│   ├── layouts/               # Layout components
-│   │   └── baseLayout.tsx
-│   └── sidebar/               # Navigation sidebar
-│
-├── stores/                     # Global contexts
-│   ├── sessionContextProvider.tsx    # WebSocket state
-│   ├── statusContextProvider.tsx     # UI state
-│   └── themeContextProvider.tsx      # Theme state
-│
-├── lib/                        # External library configs
-│   ├── axios.ts               # HTTP client
-│   └── socket.ts              # WebSocket client
-│
-├── types/                      # Global TypeScript types
-│   ├── constants/             # API endpoints, events
-│   └── enums/                 # Color enums
-│
-└── utils/                      # Utility functions
+ app/
+    index.tsx               # App root component
+    provider.tsx            # Context providers wrapper
+    router.tsx              # Route configuration
+    routes/                 # Page components
+        home.tsx
+        notFound.tsx
+
+ features/
+    editor/                 # Main editor feature
+        index.tsx           # Editor layout
+        components/         # Feature components
+           fileTreeView/   # File browser
+           editorView/     # Data grid
+           toolbarView/    # Toolbar with tools
+           consoleView/    # Real-time console
+           filebarView/    # File tabs
+        stores/             # Feature contexts
+           workspaceContextProvider.tsx
+           toolbarContextProvider.tsx
+        hooks/              # Feature hooks
+        types/              # Feature types
+        utils/              # Feature utilities
+
+ components/                 # Shared components
+    dialogs/               # Modal dialogs
+       settingsDialog/
+       feedbackDialog/
+       shortcutsDialog/
+    layouts/               # Layout components
+       baseLayout.tsx
+    sidebar/               # Navigation sidebar
+
+ stores/                     # Global contexts
+    sessionContextProvider.tsx    # WebSocket state
+    statusContextProvider.tsx     # UI state
+    themeContextProvider.tsx      # Theme state
+
+ lib/                        # External library configs
+    axios.ts               # HTTP client
+    socket.ts              # WebSocket client
+
+ types/                      # Global TypeScript types
+    constants/             # API endpoints, events
+    enums/                 # Color enums
+
+ utils/                      # Utility functions
 ```
 
 ### Component Hierarchy
 
 ```
 <App>
-└── <AppProvider>  (wraps all contexts)
-    ├── <SessionContextProvider>  (WebSocket)
-    ├── <StatusContextProvider>   (UI state)
-    └── <ThemeContextProvider>    (Theme)
-        └── <AppRouter>
-            └── <BaseLayout>
-                ├── <Header>
-                ├── <Sidebar>
-                └── <Editor>  (main feature)
-                    ├── <WorkspaceContextProvider>
-                    │   └── <ToolbarContextProvider>
-                    │       ├── <FileTreeView>
-                    │       │   └── RichTreeView (MUI)
-                    │       └── <EditorContent>
-                    │           ├── <ToolbarView>
-                    │           │   ├── AutomaticGroup
-                    │           │   ├── DownloadGroup
-                    │           │   ├── MergeGroup
-                    │           │   └── ApplyGroup
-                    │           ├── <EditorView>
-                    │           │   └── DataGrid (MUI)
-                    │           ├── <FilebarView>
-                    │           └── <ConsoleView>
+ <AppProvider>  (wraps all contexts)
+     <SessionContextProvider>  (WebSocket)
+     <StatusContextProvider>   (UI state)
+     <ThemeContextProvider>    (Theme)
+         <AppRouter>
+             <BaseLayout>
+                 <Header>
+                 <Sidebar>
+                 <Editor>  (main feature)
+                     <WorkspaceContextProvider>
+                        <ToolbarContextProvider>
+                            <FileTreeView>
+                               RichTreeView (MUI)
+                            <EditorContent>
+                                <ToolbarView>
+                                   AutomaticGroup
+                                   DownloadGroup
+                                   MergeGroup
+                                   ApplyGroup
+                                <EditorView>
+                                   DataGrid (MUI)
+                                <FilebarView>
+                                <ConsoleView>
 ```
 
 ### State Management
@@ -351,6 +357,7 @@ KATH uses **React Context API** for state management (no Redux):
 #### Global Contexts
 
 **SessionContext** - WebSocket connection state
+
 ```typescript
 interface SessionContextProps {
   connected: boolean;  // WebSocket connection status
@@ -358,6 +365,7 @@ interface SessionContextProps {
 ```
 
 **StatusContext** - UI state
+
 ```typescript
 interface StatusContextProps {
   blocked: boolean;              // UI disabled during operations
@@ -368,6 +376,7 @@ interface StatusContextProps {
 ```
 
 **ThemeContext** - Light/dark theme
+
 ```typescript
 interface ThemeContextProps {
   mode: string;         // 'light' | 'dark'
@@ -379,6 +388,7 @@ interface ThemeContextProps {
 #### Feature Contexts
 
 **WorkspaceContext** - Editor workspace state
+
 ```typescript
 interface WorkspaceContextProps {
   // Current file
@@ -411,23 +421,23 @@ interface WorkspaceContextProps {
 
 ```
 1. User clicks file in tree
-   │
+   
 2. FileTreeItem.onClick()
-   │
+   
 3. workspaceContext.openFileByPath(filePath)
-   │
+   
 4. workspaceContext.fileStateUpdate({ id, label, type })
-   │
+   
 5. EditorView detects file.id change (useEffect)
-   │
+   
 6. axios.get('/workspace/file/{id}', { page, rowsPerPage })
-   │
+   
 7. Backend processes request
-   │
+   
 8. Response: { columns, rows, pagination }
-   │
+   
 9. fileStateUpdate({ fileContent, filePagination })
-   │
+   
 10. DataGrid re-renders with new data
 ```
 
@@ -435,13 +445,13 @@ interface WorkspaceContextProps {
 
 ```
 1. Backend performs operation
-   │
+   
 2. socketio.emit('console_feedback', { message, type })
-   │
+   
 3. Frontend Socket.IO listener receives event
-   │
+   
 4. workspaceContext.consoleFeedbackStateUpdate(message)
-   │
+   
 5. ConsoleView re-renders with new message
 ```
 
@@ -452,59 +462,59 @@ interface WorkspaceContextProps {
 ### Complete Request/Response Cycle
 
 ```
-┌──────────────┐
-│  User Action │
-└──────┬───────┘
-       │
-       ↓
-┌──────────────────────────────────────────┐
-│  Frontend Component                      │
-│  - Button click / Form submit            │
-│  - State update (StatusContext.blocked)  │
-└──────┬───────────────────────────────────┘
-       │
-       ↓
-┌──────────────────────────────────────────┐
-│  Axios HTTP Request                      │
-│  - Headers: { uuid, sid }                │
-│  - Method: GET/POST/PUT/DELETE           │
-│  - Body: JSON payload                    │
-└──────┬───────────────────────────────────┘
-       │
-       ↓
-┌──────────────────────────────────────────┐
-│  Flask Route Handler                     │
-│  1. Validate headers                     │
-│  2. Emit "console_feedback" (start)      │
-│  3. Execute business logic               │
-│     - Read CSV with pandas               │
-│     - Run DNA analysis tool              │
-│     - Write results                      │
-│  4. Emit "console_feedback" (complete)   │
-│  5. Return JSON response                 │
-└──────┬───────────────────────────────────┘
-       │
-       ↓
-┌──────────────────────────────────────────┐
-│  Socket.IO Events (parallel)             │
-│  - "console_feedback" events             │
-│  - Received by all client sessions       │
-└──────┬───────────────────────────────────┘
-       │
-       ↓
-┌──────────────────────────────────────────┐
-│  Frontend Event Handlers                 │
-│  - ConsoleView updates                   │
-│  - WorkspaceContext state updates        │
-└──────┬───────────────────────────────────┘
-       │
-       ↓
-┌──────────────────────────────────────────┐
-│  UI Updates                              │
-│  - DataGrid refreshes                    │
-│  - Console shows messages                │
-│  - StatusContext.blocked = false         │
-└──────────────────────────────────────────┘
+
+  User Action 
+
+       
+       
+
+  Frontend Component                      
+  - Button click / Form submit            
+  - State update (StatusContext.blocked)  
+
+       
+       
+
+  Axios HTTP Request                      
+  - Headers: { uuid, sid }                
+  - Method: GET/POST/PUT/DELETE           
+  - Body: JSON payload                    
+
+       
+       
+
+  Flask Route Handler                     
+  1. Validate headers                     
+  2. Emit "console_feedback" (start)      
+  3. Execute business logic               
+     - Read CSV with pandas               
+     - Run DNA analysis tool              
+     - Write results                      
+  4. Emit "console_feedback" (complete)   
+  5. Return JSON response                 
+
+       
+       
+
+  Socket.IO Events (parallel)             
+  - "console_feedback" events             
+  - Received by all client sessions       
+
+       
+       
+
+  Frontend Event Handlers                 
+  - ConsoleView updates                   
+  - WorkspaceContext state updates        
+
+       
+       
+
+  UI Updates                              
+  - DataGrid refreshes                    
+  - Console shows messages                
+  - StatusContext.blocked = false         
+
 ```
 
 ---
@@ -513,7 +523,7 @@ interface WorkspaceContextProps {
 
 ### Current Security (v0.2-alpha)
 
-⚠️ **Note:** Current version is designed for single-user local deployment.
+[!] **Note:** Current version is designed for single-user local deployment.
 
 **Authentication:** None (UUID-based session identification)
 **Authorization:** None (all users have full access)
@@ -523,11 +533,11 @@ interface WorkspaceContextProps {
 
 ```
 Client generates UUID (localStorage)
-   ↓
+   
 UUID sent in HTTP headers
-   ↓
+   
 Backend tracks sessions in Redis
-   ↓
+   
 Socket.IO room per UUID
 ```
 
@@ -548,27 +558,27 @@ See [REFACTORING_PLAN.md](../../REFACTORING_PLAN.md#task-56-user-management--per
 ### Current Docker Deployment
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Docker Container (cpu64/kath:final-amd64-fixed)        │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  Frontend (Vite dev server) - Port 5173           │  │
-│  └───────────────────────────────────────────────────┘  │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  Backend (Gunicorn + Flask) - Port 8080           │  │
-│  └───────────────────────────────────────────────────┘  │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  Redis Server - Port 6379 (internal)              │  │
-│  └───────────────────────────────────────────────────┘  │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  Workspace Volume Mount                           │  │
-│  │  ./data → /kath/app/back_end/src/workspace/...    │  │
-│  └───────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-                    │
-                    ↓
+
+  Docker Container (cpu64/kath:final-amd64-fixed)        
+    
+    Frontend (Vite dev server) - Port 5173             
+    
+    
+    Backend (Gunicorn + Flask) - Port 8080             
+    
+    
+    Redis Server - Port 6379 (internal)                
+    
+    
+    Workspace Volume Mount                             
+    ./data  /kath/app/back_end/src/workspace/...      
+    
+
+                    
+                    
             Host Machine Ports
-            - 5173 → Frontend
-            - 8080 → Backend API
+            - 5173  Frontend
+            - 8080  Backend API
 ```
 
 ### Container Entrypoint
@@ -584,32 +594,32 @@ cd ./front_end && npm run dev
 
 ```
                     Internet
-                       │
-                       ↓
-                  ┌─────────┐
-                  │  Nginx  │  (Reverse Proxy, SSL)
-                  └─────────┘
-                       │
-       ┌───────────────┼───────────────┐
-       │               │               │
-       ↓               ↓               ↓
-┌──────────┐    ┌──────────┐    ┌──────────┐
-│ Frontend │    │ Backend  │    │  Redis   │
-│ (Static) │    │ (Gunicorn│    │ (Session)│
-└──────────┘    │ + Flask) │    └──────────┘
-                └──────────┘
-                       │
-                       ↓
-                ┌──────────┐
-                │  Celery  │  (Background tasks)
-                │  Workers │
-                └──────────┘
-                       │
-                       ↓
-                ┌──────────┐
-                │ SQLite   │  (Database)
-                │ Database │
-                └──────────┘
+                       
+                       
+                  
+                    Nginx    (Reverse Proxy, SSL)
+                  
+                       
+       
+                                     
+                                     
+        
+ Frontend      Backend        Redis   
+ (Static)      (Gunicorn     (Session)
+     + Flask)     
+                
+                       
+                       
+                
+                  Celery    (Background tasks)
+                  Workers 
+                
+                       
+                       
+                
+                 SQLite     (Database)
+                 Database 
+                
 ```
 
 ---
@@ -621,37 +631,37 @@ cd ./front_end && npm run dev
 Replace CSV storage with SQLite database:
 
 ```
-┌─────────────────────────────────────────┐
-│  Application Layer                      │
-│  - Routes                               │
-│  - Business Logic                       │
-└──────────────┬──────────────────────────┘
-               │
-               ↓
-┌─────────────────────────────────────────┐
-│  Repository Layer                       │
-│  - WorkspaceRepository                  │
-│  - FileRepository                       │
-│  - VariantRepository                    │
-│  - AnnotationRepository                 │
-└──────────────┬──────────────────────────┘
-               │
-               ↓
-┌─────────────────────────────────────────┐
-│  ORM Layer (SQLAlchemy)                 │
-│  - Models                               │
-│  - Relationships                        │
-└──────────────┬──────────────────────────┘
-               │
-               ↓
-┌─────────────────────────────────────────┐
-│  Database (SQLite)                      │
-│  - workspaces                           │
-│  - files                                │
-│  - variants                             │
-│  - annotations                          │
-│  - aggregations (cached)                │
-└─────────────────────────────────────────┘
+
+  Application Layer                      
+  - Routes                               
+  - Business Logic                       
+
+               
+               
+
+  Repository Layer                       
+  - WorkspaceRepository                  
+  - FileRepository                       
+  - VariantRepository                    
+  - AnnotationRepository                 
+
+               
+               
+
+  ORM Layer (SQLAlchemy)                 
+  - Models                               
+  - Relationships                        
+
+               
+               
+
+  Database (SQLite)                      
+  - workspaces                           
+  - files                                
+  - variants                             
+  - annotations                          
+  - aggregations (cached)                
+
 ```
 
 ### Tool Integration Framework
@@ -659,60 +669,60 @@ Replace CSV storage with SQLite database:
 Standardized tool integration with async execution:
 
 ```
-┌─────────────────────────────────────────┐
-│  Tool Registry                          │
-│  - SpliceAI                             │
-│  - CADD                                 │
-│  - REVEL                                │
-│  - VEP                                  │
-│  - PolyPhen-2                           │
-│  - AlphaMissense                        │
-└──────────────┬──────────────────────────┘
-               │
-               ↓
-┌─────────────────────────────────────────┐
-│  BaseTool Interface                     │
-│  - validate_input()                     │
-│  - run()                                │
-│  - parse_output()                       │
-└──────────────┬──────────────────────────┘
-               │
-               ↓
-┌─────────────────────────────────────────┐
-│  Celery Task Queue                      │
-│  - Background execution                 │
-│  - Progress tracking                    │
-│  - Result caching                       │
-└─────────────────────────────────────────┘
+
+  Tool Registry                          
+  - SpliceAI                             
+  - CADD                                 
+  - REVEL                                
+  - VEP                                  
+  - PolyPhen-2                           
+  - AlphaMissense                        
+
+               
+               
+
+  BaseTool Interface                     
+  - validate_input()                     
+  - run()                                
+  - parse_output()                       
+
+               
+               
+
+  Celery Task Queue                      
+  - Background execution                 
+  - Progress tracking                    
+  - Result caching                       
+
 ```
 
 ### API Versioning
 
 ```
 /api/v1  (Current - Maintained for backward compatibility)
-   │
-   ├─ /workspace
-   ├─ /workspace/file
-   └─ ...
+   
+    /workspace
+    /workspace/file
+    ...
 
 /api/v2  (Future - RESTful design)
-   │
-   ├─ /workspaces
-   │   ├─ GET    /workspaces
-   │   ├─ POST   /workspaces
-   │   ├─ GET    /workspaces/{id}
-   │   ├─ PATCH  /workspaces/{id}
-   │   └─ DELETE /workspaces/{id}
-   │
-   ├─ /files
-   │   ├─ GET    /files/{id}
-   │   ├─ PATCH  /files/{id}
-   │   └─ DELETE /files/{id}
-   │
-   └─ /tools
-       ├─ GET    /tools (list available)
-       ├─ POST   /files/{id}/analyze
-       └─ GET    /files/{id}/annotations
+   
+    /workspaces
+       GET    /workspaces
+       POST   /workspaces
+       GET    /workspaces/{id}
+       PATCH  /workspaces/{id}
+       DELETE /workspaces/{id}
+   
+    /files
+       GET    /files/{id}
+       PATCH  /files/{id}
+       DELETE /files/{id}
+   
+    /tools
+        GET    /tools (list available)
+        POST   /files/{id}/analyze
+        GET    /files/{id}/annotations
 ```
 
 ---

@@ -62,14 +62,21 @@ else
     echo "Docker Desktop is already running."
 fi
 
-# Create directory
-mkdir -p "$HOME/Desktop/kath"
+# Create workspace directory
+WORKSPACE_DIR="$HOME/Desktop/kath"
+mkdir -p "$WORKSPACE_DIR"
 
 # Run a kath container
-echo "Downloading Docker container..."
-docker pull cpu64/kath:final-arm64-fixed
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Build Docker images if they don't exist
+if ! docker image inspect cpu64/kath:latest >/dev/null 2>&1; then
+    echo "Building Docker images..."
+    bash "$SCRIPT_DIR/build-docker.sh"
+fi
+
 echo "Running Docker container..."
-docker run -t --rm --name kath -p 8080:8080 -p 5173:5173 -v "$HOME/Desktop/kath/:/kath/app/back_end/src/workspace/8d8ac610-566d-4ef0-9c22-186b2a5ed793" cpu64/kath:final-arm64-fixed
+docker run -t --rm --name kath -p 8080:8080 -p 5173:5173 -v "$WORKSPACE_DIR:/kath/app/back_end/src/workspace/8d8ac610-566d-4ef0-9c22-186b2a5ed793" cpu64/kath:latest
 
 # TODO: figure out and fix quitting
 while check_docker_running; do

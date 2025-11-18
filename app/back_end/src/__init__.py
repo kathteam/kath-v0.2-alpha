@@ -23,16 +23,18 @@ Returns:
 
 # pylint: disable=import-error
 
-import gevent.monkey
-from flask import Flask
 import os
 
-from .setup.extensions import compress, socketio, cors, env
-from .setup.router import router
-from .setup.eventer import eventer
+import gevent.monkey
+from flask import Flask
+
 from .constants import BASE_ROUTE
-from .utils.logging_config import setup_logging
 from .middleware import setup_request_logging
+from .routes.workspace_phase2_route import workspace_phase2_route_bp
+from .setup.eventer import eventer
+from .setup.extensions import compress, cors, env, socketio
+from .setup.router import router
+from .utils.logging_config import setup_logging
 
 
 def create_app():
@@ -62,8 +64,8 @@ def create_app():
     app = Flask(__name__)
 
     # Set up centralized logging (must be done early)
-    log_level = os.getenv('LOG_LEVEL', 'INFO')
-    logger = setup_logging(app_name='kath', log_level=log_level)
+    log_level = os.getenv("LOG_LEVEL", "INFO")
+    logger = setup_logging(app_name="kath", log_level=log_level)
     logger.info("Starting KATH application initialization")
 
     # Configure app settings
@@ -90,6 +92,12 @@ def create_app():
     cors.init_app(app, resources={r"*": {"origins": env.get_origins()}})
     logger.info("CORS initialized")
 
+    # Initialize database
+    from .database import init_db
+
+    init_db(app, create_tables=False)  # Tables already exist from migration
+    logger.info("Database initialized")
+
     # Set up event handlers
     eventer()
     logger.info("Event handlers registered")
@@ -97,6 +105,10 @@ def create_app():
     # Register main application routes
     app.register_blueprint(router(BASE_ROUTE))
     logger.info(f"Routes registered at {BASE_ROUTE}")
+
+    # Register Phase 2 routes at top level (not under /api/v1)
+    app.register_blueprint(workspace_phase2_route_bp, url_prefix="/workspace_phase2")
+    logger.info("Phase 2 routes registered at /workspace_phase2")
 
     logger.info("KATH application initialization complete")
 

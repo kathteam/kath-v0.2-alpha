@@ -13,6 +13,7 @@ This guide provides instructions on setting up and running a Flask-based develop
    - Search for `PowerShell` in the Start menu, right-click, and select `Open`.
 
 2. **Install WSL**:
+
    ```powershell
    wsl --install
    ```
@@ -28,6 +29,7 @@ This guide provides instructions on setting up and running a Flask-based develop
    - Search for `PowerShell` in the Start menu, right-click, and select `Open`.
 
 2. **Run WSL**:
+
    ```powershell
    wsl -d ubuntu
    ```
@@ -37,6 +39,7 @@ This guide provides instructions on setting up and running a Flask-based develop
 ## Step 3: Install Required Tools and Libraries in Ubuntu WSL
 
 1. **Navigate to `~` Directory**:
+
    ```bash
    cd ~
    ```
@@ -44,6 +47,7 @@ This guide provides instructions on setting up and running a Flask-based develop
    You should see something like `ubuntu_user@windows_user:~$`.
 
 2. **Update Package List:**
+
    ```bash
    sudo apt update
    ```
@@ -51,6 +55,7 @@ This guide provides instructions on setting up and running a Flask-based develop
    Wait for the system to update.
 
 3. **Install Required Packages:**
+
    ```bash
    sudo apt install python3 python3-pip python3-venv redis unzip
    ```
@@ -60,7 +65,7 @@ This guide provides instructions on setting up and running a Flask-based develop
 ## Step 4: Set Up Your Development Environment
 
 1. **Open VS Code:**:
-   - Install Visual Studio Code if you haven’t already. Download it from [here](https://code.visualstudio.com/).
+   - Install Visual Studio Code if you havent already. Download it from [here](https://code.visualstudio.com/).
 
 2. **Install WSL Extension:**
    - Open VS Code.
@@ -90,13 +95,15 @@ This guide provides instructions on setting up and running a Flask-based develop
    - Press `` Ctrl+Shift+` `` to open the New Terminal.
 
 2. **Navigate to Application:**
+
    ```bash
    cd app/back_end
    ```
-   
+
    You should see something like `ubuntu_user@windows_user:/mnt/c/Users/YourUsername/Path/To/Project/app/back-end$`.
 
 3. **Create a Python Virtual Environment:**
+
    ```powershell
    python3 -m venv .venv
    ```
@@ -104,6 +111,7 @@ This guide provides instructions on setting up and running a Flask-based develop
    Wait for virtual environment to be created.
 
 4. **Activate a Python Virtual Environment:**
+
    ```bash
    source .venv/bin/activate
    ```
@@ -111,11 +119,13 @@ This guide provides instructions on setting up and running a Flask-based develop
    For deactivating virtual environment simply run `deactivate`.
 
 5. **Install Python Dependencies:**
+
    ```powershell
    pip install -r requirements.txt
    ```
 
    Wait for the dependencies to be installed into virtual environment. To install additional development dependencies use:
+
    ```powershell
    pip install -r requirements_dev.txt
    ```
@@ -129,44 +139,52 @@ This guide provides instructions on setting up and running a Flask-based develop
 ## Step 6: Run the Development Server
 
 1. **Test if Redis is running:**
+
    ```bash
    redis-cli
    ```
 
    Test the connect with the `ping` command.
+
    ```powershell
    127.0.0.1:6379> ping
    PONG
    ```
 
    If you get this response `Could not connect to Redis at 127.0.0.1:6379: Connection refused`, exit out of the connection and start the Redis server.
+
    ```bash
    sudo systemctl start redis
    ```
 
    Now test it again.
-   
-   #
-   
+
+#
+
    ```bash
    sudo systemctl stop redis
    ```
-   
+
    This will stop the Redis server.
 
 2. **Download FASTA file for SpliceAI**
+
    ```powershell
    mkdir -p src/workspace/fasta && cd src/workspace/fasta && curl -O https://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz && gunzip hg38.fa.gz && cd ../../..
    ```
+
    This will download FASTA "hg38.fa" file that is required for correct work of SpliceAI
 
 3. **Download REVEL file**
+
    ```powershell
    mkdir -p src/workspace/revel && cd src/workspace/revel && curl -O https://rothsj06.dmz.hpc.mssm.edu/revel-v1.3_all_chromosomes.zip && unzip revel-v1.3_all_chromosomes.zip && cd ../.. && python3 scripts/revel.py workspace/revel/revel_with_transcript_ids workspace/revel/revel_with_transcript_ids.db && cd ..
    ```
+
    This will download "revel_with_transcript_ids" file that is required for correct work of REVEL. Python script will create database file for indexing REVEL values.
 
 4. **Run the application**
+
    ```powershell
    gunicorn -c gunicorn_config.py run:app
    ```

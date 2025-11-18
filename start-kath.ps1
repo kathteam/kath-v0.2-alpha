@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$KATH_IMAGE = "cpu64/kath:final-amd64-fixed"
+$KATH_IMAGE = "cpu64/kath:latest"
 $CONTAINER_NAME = "kath"
 $FRONTEND_PORT = 5173
 $BACKEND_PORT = 8080

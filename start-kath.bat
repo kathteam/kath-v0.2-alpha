@@ -4,12 +4,14 @@ REM This script automates the setup and launch of the KATH genetic analysis tool
 
 setlocal enabledelayedexpansion
 
-set KATH_IMAGE=cpu64/kath:final-amd64-fixed
+set KATH_IMAGE=cpu64/kath:latest
 set CONTAINER_NAME=kath
 set FRONTEND_PORT=5173
 set BACKEND_PORT=8080
 set SCRIPT_DIR=%~dp0
 set WORKSPACE_DIR=%SCRIPT_DIR%data
+set DATABASE_DIR=%SCRIPT_DIR%database
+set WORKSPACE_UUID=default
 
 echo.
 echo ==========================================
@@ -68,13 +70,21 @@ if %errorlevel% neq 0 (
     echo [SUCCESS] Docker is running
 )
 
-REM Create workspace directory
+REM Create workspace and database directories
 if not exist "%WORKSPACE_DIR%" (
     echo [INFO] Creating workspace directory at %WORKSPACE_DIR%...
     mkdir "%WORKSPACE_DIR%"
     echo [SUCCESS] Workspace directory created
 ) else (
     echo [INFO] Workspace directory already exists: %WORKSPACE_DIR%
+)
+
+if not exist "%DATABASE_DIR%" (
+    echo [INFO] Creating database directory at %DATABASE_DIR%...
+    mkdir "%DATABASE_DIR%"
+    echo [SUCCESS] Database directory created
+) else (
+    echo [INFO] Database directory already exists: %DATABASE_DIR%
 )
 
 REM Stop existing container if running
@@ -105,13 +115,17 @@ echo [SUCCESS] Starting KATH...
 echo.
 echo   Frontend URL: http://localhost:%FRONTEND_PORT%
 echo   Backend API:  http://localhost:%BACKEND_PORT%
-echo   Workspace:    %WORKSPACE_DIR%
+echo   Health Check: http://localhost:%BACKEND_PORT%/api/v1/monitoring/health
+echo.
+echo   Data Directories:
+echo     Workspace:  %WORKSPACE_DIR%
+echo     Database:   %DATABASE_DIR%
 echo.
 echo [INFO] Press Ctrl+C to stop KATH and exit
 echo.
 
 REM Run Docker container (interactive, auto-remove on exit)
-docker run --name %CONTAINER_NAME% -v "%WORKSPACE_DIR%:/kath/app/back_end/src/workspace/8d8ac610-566d-4ef0-9c22-186b2a5ed793" -it --rm -p %BACKEND_PORT%:8080 -p %FRONTEND_PORT%:5173 -e DOMAIN=localhost %KATH_IMAGE%
+docker run --name %CONTAINER_NAME% -v "%WORKSPACE_DIR%:/kath/app/back_end/src/workspace/%WORKSPACE_UUID%" -v "%DATABASE_DIR%:/kath/app/back_end/instance" -it --rm -p %BACKEND_PORT%:8080 -p %FRONTEND_PORT%:5173 -e DOMAIN=localhost -e USE_DATABASE_BACKEND=true -e DATABASE_PATH=instance/kath.db %KATH_IMAGE%
 
 echo.
 echo [SUCCESS] KATH stopped successfully

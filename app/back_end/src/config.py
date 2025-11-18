@@ -1,124 +1,77 @@
 """
-This module defines the `Env` class, which handles environment configuration for the application.
+Backward compatibility shim for old Env class.
 
-The class manages:
-- Loading environment variables from a `.env` file based on the application's environment.
-- Retrieving specific environment variables with default fallbacks.
-- Providing configuration values for the Flask server, such as host, port, and allowed origins.
-
-Dependencies:
-- os: Used for interacting with the operating system to retrieve environment variables.
-- dotenv: Used for loading environment variables from a `.env` file.
+This module provides the old Env interface using the new settings system.
+All new code should use src.settings.get_settings() directly.
 """
 
-# pylint: disable=import-error
+from typing import List, Union
 
-import os
-import sys
-from dotenv import load_dotenv
+from src.settings import get_settings
+
+# Get settings instance
+_settings = get_settings()
 
 
 class Env:
-    """Handles environment configuration and retrieval of environment-specific settings."""
+    """
+    Backward-compatible Env class using new settings system.
 
-    # Determine the current environment and select the appropriate .env file
-    ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
-    DOTENV_PATH = {
-        "production": ".env.production",
-        "development": ".env.development",
-    }.get(ENVIRONMENT, ".env.development")
+    DEPRECATED: This class exists only for backward compatibility.
+    New code should use get_settings() from src.settings instead.
+
+    Example migration:
+        # Old
+        from src.config import Env
+        port = Env.get_flask_run_port()
+
+        # New
+        from src.settings import get_settings
+        settings = get_settings()
+        port = settings.flask_port
+    """
 
     @classmethod
     def load_env(cls):
-        """
-        Load environment variables from the appropriate .env file.
-
-        This method uses the `python-dotenv` package to load the environment variables
-        from the `.env` file corresponding to the current environment (development or production).
-        """
-        load_dotenv(cls.DOTENV_PATH)
+        """Load environment variables (no-op with pydantic-settings)."""
+        # Settings are automatically loaded by pydantic-settings
+        pass
 
     @classmethod
-    def get_flask_run_host(cls):
-        """
-        Get the Flask server host from environment variables.
-
-        This is typically used to define the host on which the Flask app will run.
-
-        Returns:
-            str: The host address, defaulting to "0.0.0.0".
-        """
-        return os.getenv("FLASK_RUN_HOST", "0.0.0.0")
+    def get_flask_run_host(cls) -> str:
+        """Get the Flask server host from environment variables."""
+        return _settings.flask_host
 
     @classmethod
-    def get_flask_run_port(cls):
-        """
-        Get the Flask server port from environment variables.
-
-        This is used to define the port on which the Flask app will run.
-
-        Returns:
-            int: The port number, defaulting to 8080.
-        """
-        return os.getenv("FLASK_RUN_PORT", 8080)
+    def get_flask_run_port(cls) -> int:
+        """Get the Flask server port from environment variables."""
+        return _settings.flask_port
 
     @classmethod
-    def get_origins(cls):
-        """
-        Get the list of allowed origins for CORS from environment variables.
-
-        This is used for configuring CORS policies in the Flask app.
-
-        Returns:
-            list: A list of origins allowed for CORS, defaulting to ["*"].
-        """
-        origins = os.getenv("ORIGINS", "*")
-        return origins.split(",")
+    def get_origins(cls) -> Union[str, List[str]]:
+        """Get the list of allowed origins for CORS from environment variables."""
+        return _settings.cors_origins
 
     @classmethod
-    def get_redis_url(cls):
-        """
-        Get the Redis URL from environment variables.
-
-        This is used for connecting to the Redis server.
-
-        Returns:
-            str: The Redis URL, defaulting to "redis://localhost:6379/0".
-        """
-        return os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    def get_redis_url(cls) -> str:
+        """Get the Redis URL from environment variables."""
+        return _settings.redis_url
 
     @classmethod
-    def get_max_entries(cls):
-        """
-        Get the maximum number of entries to process from environment variables. Works on spliceai and cadd.
-
-        This is used to limit the number of entries to process when testing.
-
-        Returns:
-            int: The maximum number of entries to process, or sys.maxsize if no limit.
-        """
-        try:
-            return int(os.getenv("MAX_ENTRIES", str(sys.maxsize)))
-        except ValueError as e:
-            raise ValueError(f"Invalid value for MAX_ENTRIES: {os.getenv('MAX_ENTRIES')}. It must be an integer or unset.") from e
+    def get_max_entries(cls) -> int:
+        """Get the maximum number of entries to process from environment variables."""
+        return _settings.max_entries
 
     @classmethod
-    def get_use_cuda(cls):
-        """
-        Check whether CUDA should be used for SpliceAI.
-
-        Returns:
-            bool: True if CUDA is enabled, False otherwise.
-        """
-        return os.getenv("CUDA", "false").lower() == "true"
+    def get_use_cuda(cls) -> bool:
+        """Check whether CUDA should be used for SpliceAI."""
+        return _settings.use_cuda
 
     @classmethod
-    def get_cuda_batch_size(cls):
-        """
-        Get the CUDA batch size for SpliceAI.
+    def get_cuda_batch_size(cls) -> int:
+        """Get the CUDA batch size for SpliceAI."""
+        return _settings.cuda_batch_size
 
-        Returns:
-            str: Batch size, defaulting to "32".
-        """
-        return os.getenv("CUDA_BATCH_SIZE", "32")
 
+# Export for backward compatibility
+__all__ = ["Env"]

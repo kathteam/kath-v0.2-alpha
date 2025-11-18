@@ -1,5 +1,7 @@
-import { ConsoleView, EditorView, FilebarView, FileTreeView, ToolbarView } from '@/features/editor/components';
+import { ConsoleView, EditorView, FilebarView, ToolbarView } from '@/features/editor/components';
+import { MobileDrawer } from '@/features/editor/components/MobileDrawer';
 import { WorkspaceContextProvider } from '@/features/editor/stores';
+import { useResponsive } from '@/hooks/useResponsive';
 import { Box, useTheme } from '@mui/material';
 
 /**
@@ -12,12 +14,17 @@ import { Box, useTheme } from '@mui/material';
  * `WorkspaceContextProvider`.
  *
  * The layout is structured as follows:
- * - A sidebar on the left (`20%` width) containing the `FileTreeView` component.
- * - A main content area on the right (`80%` width) that includes:
- *   - A `ToolbarView` at the top (`15%` height).
- *   - An `EditorView` below the toolbar (`60%` height).
- *   - A `FilebarView` above the console (`3%` height).
- *   - A `ConsoleView` component at the bottom (`22%` height) with rounded bottom corners.
+ * - A sidebar on the left (`20%` width on desktop, drawer on mobile) containing the `FileTreeView` component.
+ * - A main content area that includes:
+ *   - A `ToolbarView` at the top.
+ *   - An `EditorView` in the middle.
+ *   - A `FilebarView` above the console.
+ *   - A `ConsoleView` component at the bottom with rounded corners.
+ *
+ * The layout adapts responsively:
+ * - **Desktop (900px)**: Side-by-side layout with fixed sidebar (20%) and main content (80%)
+ * - **Tablet (600-899px)**: Collapsible drawer for file tree, stacked main content
+ * - **Mobile (<600px)**: Drawer for file tree, vertically stacked components, adjusted heights
  *
  * The layout is styled using the current theme's colors and responsive design principles. The theme controls the background
  * colors, border-radius, and other styling aspects, making the layout adapt to light and dark modes seamlessly.
@@ -33,32 +40,42 @@ import { Box, useTheme } from '@mui/material';
  * @returns {JSX.Element} The rendered editor layout with integrated components and workspace context.
  */
 export const Editor = () => {
-  const Theme = useTheme();
+  const theme = useTheme();
+  const { isMobile, isTablet } = useResponsive();
+
+  // Adjust heights based on screen size
+  const toolbarHeight = isMobile ? '15%' : '25%';
+  const editorHeight = isMobile ? '55%' : '50%';
+  const filebarHeight = isMobile ? '2%' : '3%';
+  const consoleHeight = isMobile ? '28%' : '22%';
 
   return (
     <WorkspaceContextProvider>
-      <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row' }}>
+      <MobileDrawer>
         <Box
           sx={{
-            width: '20vw',
+            width: '100%',
+            height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            bgcolor: Theme.palette.secondary.main,
-            borderRadius: '0.625rem 0 0 0.625rem',
-            margin: '1rem',
+            ...(isMobile || isTablet
+              ? {
+                  margin: 0,
+                }
+              : {
+                  width: '75vw',
+                }),
           }}
         >
-          <FileTreeView />
-        </Box>
-        <Box sx={{ width: '75vw', height: '100%', display: 'flex', flexDirection: 'column' }}>
           <Box
             sx={{
               width: '100%',
-              height: '25%',
+              height: toolbarHeight,
               display: 'flex',
               flexDirection: 'column',
-              bgcolor: Theme.palette.action.selected,
-              borderRadius: '0 0.625rem 0 0',
+              bgcolor: theme.palette.action.selected,
+              borderRadius: isMobile ? 0 : '0 0.625rem 0 0',
+              overflowY: 'auto', // Allow scrolling on mobile if content overflows
             }}
           >
             <ToolbarView />
@@ -66,10 +83,11 @@ export const Editor = () => {
           <Box
             sx={{
               width: '100%',
-              height: '50%',
+              height: editorHeight,
               display: 'flex',
               flexDirection: 'column',
-              bgcolor: Theme.palette.background.default,
+              bgcolor: theme.palette.background.default,
+              overflowX: 'auto', // Allow horizontal scrolling for data grid on mobile
             }}
           >
             <EditorView />
@@ -77,10 +95,11 @@ export const Editor = () => {
           <Box
             sx={{
               width: '100%',
-              height: '3%',
+              height: filebarHeight,
               display: 'flex',
               flexDirection: 'row',
-              bgcolor: Theme.palette.action.selected,
+              bgcolor: theme.palette.action.selected,
+              overflowX: 'auto', // Allow horizontal scrolling for file tabs on mobile
             }}
           >
             <FilebarView />
@@ -88,17 +107,18 @@ export const Editor = () => {
           <Box
             sx={{
               width: '100%',
-              height: '22%',
+              height: consoleHeight,
               display: 'flex',
               flexDirection: 'column',
-              bgcolor: Theme.palette.background.paper,
-              borderRadius: '0 0 0.625rem 0',
+              bgcolor: theme.palette.background.paper,
+              borderRadius: isMobile ? 0 : '0 0 0.625rem 0',
+              overflowY: 'auto', // Allow scrolling for console output
             }}
           >
             <ConsoleView />
           </Box>
         </Box>
-      </Box>
+      </MobileDrawer>
     </WorkspaceContextProvider>
   );
 };

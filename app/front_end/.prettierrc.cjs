@@ -11,10 +11,4 @@ module.exports = {
   bracketSameLine: false,             // pretty JSX
   endOfLine: 'lf',                    // 'lf' for '\n'
   embeddedLanguageFormatting: 'auto', // Automatically formats embedded code.
-
-  // Import-related plugins and configurations
-  plugins: ['prettier-plugin-import-sort', 'prettier-plugin-organize-imports'],
-  importOrder: ['^react', '^[^@]', '^@'],
-  importOrderSeparation: true,
-  importOrderSortSpecifiers: true,
 };
