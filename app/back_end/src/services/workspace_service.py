@@ -5,6 +5,7 @@ Provides business logic for workspace file operations, abstracting database quer
 from route handlers. Supports filtering, sorting, and pagination.
 """
 
+import os
 from typing import Any, Dict, List, Optional, Tuple
 
 from sqlalchemy import and_, desc, or_
@@ -72,15 +73,17 @@ class WorkspaceService:
         Raises:
             FileNotFoundError: If workspace or file doesn't exist
         """
-        # Get workspace
-        workspace = self.workspace_repo.find_by_uuid(workspace_id)
-        if not workspace:
-            raise FileNotFoundError(f"Workspace not found: {workspace_id}")
+        # Get or create workspace (auto-index when accessing files)
+        workspace = self.workspace_repo.get_or_create(workspace_id)
 
-        # Get file
-        file_obj = self.file_repo.find_by_path(workspace_id, file_path)
-        if not file_obj:
-            raise FileNotFoundError(f"File not found: {file_path}")
+        # Get or create file (auto-index when accessing files from filesystem)
+        file_name = os.path.basename(file_path) if file_path else "root"
+        file_obj = self.file_repo.get_or_create(
+            workspace_id=workspace_id,
+            path=file_path,
+            name=file_name,
+            file_type="file"
+        )
 
         # Parse header
         import json
