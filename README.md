@@ -66,10 +66,27 @@ We proudly acknowledge our advisors who contribute their expertise and resources
 
 ---
 
+###  Quick Start with Docker
+
+The easiest way to run KATH is with Docker and the provided startup script:
+
+```bash
+# Launch KATH (automatically opens browser)
+./start-kath.sh
+
+# Access the application
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:8080
+```
+
+**All your analysis data persists automatically!** See [Data Persistence](#data-persistence) below.
+
+---
+
 ###  Setup Instructions
 
 For a complete setup, follow these steps and refer to the `README.md` files in `app/front_end` and `app/back_end` for detailed configurations.
-**Or** read `README.md` file in `app/` for docker instrucions.
+**Or** read `README.md` file in `app/` for docker instructions.
 
 1. **Clone the Repository**
 
@@ -83,6 +100,57 @@ For a complete setup, follow these steps and refer to the `README.md` files in `
     - Open the `README.md` file in each directory and follow the specific installation and configuration steps provided.
 
 After completing these steps, your environment should be set up and ready to run.
+
+---
+
+###  Data Persistence
+
+KATH automatically preserves all your genetic analysis data between container restarts. Your data is stored in two persistent directories:
+
+**Data Directory** (`./data/`)
+- Contains all CSV analysis result files
+- Stores CADD, SpliceAI, and other tool outputs
+- ~13 MB in the provided example
+
+**Database Directory** (`./database/`)
+- SQLite database with metadata and analysis history
+- File index and variant information
+- Survives container deletion
+
+#### Key Features
+
+✅ **Automatic Data Discovery** - Previous files automatically indexed on startup
+✅ **No Data Loss** - Container restart/removal doesn't affect data
+✅ **Easy Backup** - Simple tar-based backup system
+✅ **Cross-System** - Move data between systems with tar archives
+
+#### Verify Data Persistence
+
+```bash
+# Check data before closing container
+ls -lah data/
+ls -lah database/
+
+# Verify data survives restart
+./start-kath.sh          # Stop with Ctrl+C
+./start-kath.sh          # Restart - all data still there!
+```
+
+#### For Detailed Information
+
+See [DATA_PERSISTENCE.md](DATA_PERSISTENCE.md) for:
+- Complete architecture explanation
+- Volume mounting details
+- Backup and restore procedures
+- Troubleshooting guide
+- Production deployment recommendations
+
+#### Verify Setup
+
+```bash
+# Run persistence verification
+./verify-persistence.sh
+```
 
 ---
 
