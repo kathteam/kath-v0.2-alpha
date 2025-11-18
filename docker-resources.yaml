@@ -1,0 +1,81 @@
+# KATH Docker Resource Limits Configuration
+# This file defines resource constraints for the KATH Docker container
+# to prevent system freezing during data processing
+
+# Docker container resource limits
+docker:
+  # Memory limit for the container (supports k, m, g suffixes)
+  # Set based on available system RAM
+  # Recommended: 4-8GB for typical systems, 16GB+ for high-performance systems
+  memory: "4g"
+
+  # Memory-swap limit (should equal memory limit to disable swap usage)
+  # This prevents the container from using disk swap which causes performance degradation
+  memory_swap: "4g"
+
+  # CPU limit (number of CPUs to limit the container to)
+  # Recommended: 2-4 CPUs for typical systems, more for high-performance systems
+  cpus: "4"
+
+  # CPU shares (relative weight of CPU usage, default 1024)
+  # Lower values reduce container priority
+  cpu_shares: "1024"
+
+# Tool-specific resource configurations
+tools:
+  # CADD algorithm configuration
+  cadd:
+    # Maximum number of parallel processes for CADD processing
+    # Limits ProcessPoolExecutor worker count
+    # Lower values (2-4) reduce memory usage, higher (8+) increase throughput
+    max_workers: "4"
+
+    # Maximum chunk size for data processing (in rows)
+    # Smaller chunks use less memory but process slower
+    # Larger chunks are faster but use more memory
+    # Recommended: 1000-5000 rows per chunk
+    chunk_size: "2000"
+
+  # Other tools can be configured similarly
+  spliceai:
+    max_workers: "2"
+    chunk_size: "1000"
+
+  clinvar:
+    max_workers: "2"
+    chunk_size: "500"
+
+# System monitoring and auto-scaling (future enhancement)
+monitoring:
+  # Enable memory usage monitoring
+  enable_monitoring: true
+
+  # Memory warning threshold (percentage of limit)
+  memory_warning_threshold: "80"
+
+  # Memory critical threshold (percentage of limit)
+  memory_critical_threshold: "95"
+
+  # Auto-pause processing if memory critical
+  auto_pause_on_critical: true
+
+# Performance tuning
+performance:
+  # Number of threads for I/O operations
+  io_threads: "4"
+
+  # Database connection pool size
+  db_pool_size: "10"
+
+  # Enable caching of intermediate results
+  enable_caching: true
+
+  # Cache size limit (in MB)
+  cache_limit_mb: "500"
+
+# Notes for configuration:
+# - Adjust memory/cpus based on your system's available resources
+# - Leave at least 2GB free for the host system
+# - For genetic data: 4GB memory handles ~50K variants, 8GB handles ~500K variants
+# - ProcessPoolExecutor workers should not exceed CPU count
+# - Monitor actual usage and adjust chunk_size accordingly

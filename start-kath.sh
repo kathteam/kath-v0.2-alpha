@@ -15,6 +15,42 @@ BACKEND_PORT=8080
 WORKSPACE_DIR="$SCRIPT_DIR/data"
 DATABASE_DIR="$SCRIPT_DIR/database"
 WORKSPACE_UUID="default"
+RESOURCES_CONFIG="$SCRIPT_DIR/docker-resources.yaml"
+
+# Function to parse YAML values (simple parser for basic key: value pairs)
+get_yaml_value() {
+    local file="$1"
+    local key="$2"
+    if [ -f "$file" ]; then
+        grep "^[[:space:]]*$key:" "$file" | sed 's/.*:\s*"\?\([^"]*\)"\?$/\1/' | head -1
+    fi
+}
+
+# Load resource limits from config file
+load_resource_limits() {
+    if [ -f "$RESOURCES_CONFIG" ]; then
+        print_info "Loading resource limits from: $RESOURCES_CONFIG"
+        DOCKER_MEMORY=$(get_yaml_value "$RESOURCES_CONFIG" "memory")
+        DOCKER_MEMORY_SWAP=$(get_yaml_value "$RESOURCES_CONFIG" "memory_swap")
+        DOCKER_CPUS=$(get_yaml_value "$RESOURCES_CONFIG" "cpus")
+        CADD_MAX_WORKERS=$(get_yaml_value "$RESOURCES_CONFIG" "max_workers")
+
+        # Set defaults if parsing failed
+        DOCKER_MEMORY="${DOCKER_MEMORY:-4g}"
+        DOCKER_MEMORY_SWAP="${DOCKER_MEMORY_SWAP:-4g}"
+        DOCKER_CPUS="${DOCKER_CPUS:-4}"
+        CADD_MAX_WORKERS="${CADD_MAX_WORKERS:-4}"
+
+        print_info "Resource limits - Memory: $DOCKER_MEMORY, CPUs: $DOCKER_CPUS, Workers: $CADD_MAX_WORKERS"
+    else
+        # Use defaults if config file not found
+        print_warning "Resource config not found, using defaults"
+        DOCKER_MEMORY="4g"
+        DOCKER_MEMORY_SWAP="4g"
+        DOCKER_CPUS="4"
+        CADD_MAX_WORKERS="4"
+    fi
+}
 
 # Color output
 RED='\033[0;31m'
@@ -184,6 +220,7 @@ run_container() {
     print_info "Starting KATH container..."
 
     # Run container with proper volume mounts for workspace and database
+    # Resource limits are applied from docker-resources.yaml to prevent system freezing
     docker run \
         --name "$CONTAINER_NAME" \
         -v "$WORKSPACE_DIR:/kath/app/back_end/src/workspace/$WORKSPACE_UUID" \
@@ -192,9 +229,13 @@ run_container() {
         --rm \
         -p "${BACKEND_PORT}:8080" \
         -p "${FRONTEND_PORT}:5173" \
+        --memory="$DOCKER_MEMORY" \
+        --memory-swap="$DOCKER_MEMORY_SWAP" \
+        --cpus="$DOCKER_CPUS" \
         -e DOMAIN=localhost \
         -e USE_DATABASE_BACKEND=true \
         -e DATABASE_PATH=instance/kath.db \
+        -e CADD_MAX_WORKERS="$CADD_MAX_WORKERS" \
         "$KATH_IMAGE"
 
     if [ $? -eq 0 ]; then
@@ -217,6 +258,9 @@ cleanup() {
 # Main execution
 main() {
     print_header
+
+    # Load resource limits from config file before anything else
+    load_resource_limits
 
     # Trap Ctrl+C to cleanup (use INT and TERM instead of SIGINT/SIGTERM for compatibility)
     trap cleanup INT TERM

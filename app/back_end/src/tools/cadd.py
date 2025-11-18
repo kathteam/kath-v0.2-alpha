@@ -821,7 +821,8 @@ def cadd_pipeline(dataframe: pd.DataFrame, cadd_folder_path: str) -> pd.DataFram
     if not os.path.exists(cadd_folder_output):
         os.makedirs(cadd_folder_output)
 
-    with ProcessPoolExecutor() as executor:
+    max_workers = int(os.getenv("CADD_MAX_WORKERS", "4"))
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
         jobs = {
             executor.submit(create_cadd_input_files, data_chunks[i], cadd_folder_input, i): i for i in range(num_chunks)
         }
@@ -841,7 +842,8 @@ def cadd_pipeline(dataframe: pd.DataFrame, cadd_folder_path: str) -> pd.DataFram
         os.rename(os.path.join(cadd_folder_output, cadd_gzip_file_path), renamed_path)
         tsv_chunks[chunk_id] = renamed_path
 
-    with ProcessPoolExecutor() as executor:
+    max_workers = int(os.getenv("CADD_MAX_WORKERS", "4"))
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
         jobs = {
             executor.submit(gunzip_file, os.path.join(cadd_folder_output, tsv_chunks[i]), i): i
             for i in range(num_chunks)
